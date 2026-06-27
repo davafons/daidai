@@ -210,13 +210,14 @@ bundle exec rake         # lint + test (default)
 
 ### Signing off
 
-This project uses [gh-signoff](https://github.com/basecamp/gh-signoff) instead of cloud CI — you run the checks locally and sign off on the commit, which sets a `signoff` status check that branch protection requires:
+This project uses [gh-signoff](https://github.com/basecamp/gh-signoff) instead of cloud CI — you run the checks locally and sign off on the commit, which sets a `signoff` status check that branch protection requires.
 
 ```sh
 gh extension install basecamp/gh-signoff   # one-time
-bundle exec rake                           # lint + test must pass first
-gh signoff                                 # mark the current commit verified
+bundle exec rake signoff                   # runs lint + test, signs off ONLY if they pass
 ```
+
+`rake signoff` makes `lint` and `test` prerequisites, so it won't sign off a red commit. (Running `gh signoff create -f` by hand skips that gate — gh-signoff is trust-based.) The `-f` flag is needed because jj leaves git's HEAD detached.
 
 `gh signoff install` configures `main` to require the signoff status. To refresh the vendored conjugation tables from upstream, see `rake daidai:sync` above.
 

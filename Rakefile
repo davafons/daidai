@@ -65,3 +65,12 @@ end
 load File.expand_path("lib/daidai/release.rake", __dir__)
 
 task default: %i[lint test]
+
+# Sign off only after the checks pass: lint + test are prerequisites, so rake
+# aborts before the signoff body runs if either fails. This makes "green, then
+# sign off" the one easy path (raw `gh signoff -f` still bypasses it — gh-signoff
+# is trust-based). `-f` is needed because jj leaves git's HEAD detached.
+desc "Run lint + tests, then sign off the commit via gh-signoff (only if they pass)"
+task signoff: %i[lint test] do
+  sh "gh signoff create -f"
+end
