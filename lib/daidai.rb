@@ -2,7 +2,7 @@
 
 require_relative "daidai/version"
 require_relative "daidai/conjugator"
-require_relative "daidai/sudachi"
+require_relative "daidai/kabosu"
 
 # Daidai (橙) — Japanese verb and adjective conjugation in pure Ruby.
 #
@@ -31,15 +31,15 @@ module Daidai
     # in the surface, so the kanji forms need no reading). Returns a Daidai::Word,
     # or nil when nothing is conjugatable.
     #
-    # `pos` may be omitted, in which case Sudachi (the optional `kabosu` gem)
+    # `pos` may be omitted, in which case the optional `kabosu` gem (Sudachi)
     # resolves the dictionary form, POS and reading from `word` — even when `word`
     # is itself inflected ("食べている" → conjugations of 食べる). This raises
-    # Daidai::Sudachi::MissingDependency if kabosu/a dictionary isn't installed.
+    # Daidai::Kabosu::MissingDependency if kabosu/a dictionary isn't installed.
     def conjugate(word, pos = nil, reading: nil)
       return nil if word.nil? || word.to_s.empty?
 
       if pos.nil?
-        resolved = Sudachi.resolve(word) or return nil
+        resolved = Kabosu.resolve(word) or return nil
         word, pos, reading = resolved.values_at(:word, :pos, :reading)
       end
 

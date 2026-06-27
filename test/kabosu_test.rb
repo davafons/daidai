@@ -2,12 +2,12 @@
 
 require_relative "test_helper"
 
-# The optional Sudachi resolver. The 活用型 → JMdict POS mapping is pure and
-# always tested; the live tokenizer path runs only when kabosu + a Sudachi
+# The optional kabosu-backed resolver. The 活用型 → JMdict POS mapping is pure
+# and always tested; the live tokenizer path runs only when kabosu + a Sudachi
 # dictionary are installed (otherwise it skips).
-class SudachiTest < Minitest::Test
+class KabosuTest < Minitest::Test
   def map(pos, lemma)
-    Daidai::Sudachi.jmdict_pos(pos, lemma)
+    Daidai::Kabosu.jmdict_pos(pos, lemma)
   end
 
   def test_godan_conjugation_types
@@ -46,7 +46,7 @@ class SudachiTest < Minitest::Test
   end
 
   def test_resolve_inflected_words
-    skip "kabosu / Sudachi dictionary not available" unless Daidai::Sudachi.available?
+    skip "kabosu / Sudachi dictionary not available" unless Daidai::Kabosu.available?
 
     # word omitted POS → Sudachi resolves the lemma + POS, even when inflected.
     { "食べている" => %w[食べる 食べた], # progressive → ichidan
@@ -63,8 +63,8 @@ class SudachiTest < Minitest::Test
   end
 
   def test_missing_dependency_raised_without_pos_or_kabosu
-    skip "kabosu is available here" if Daidai::Sudachi.available?
+    skip "kabosu is available here" if Daidai::Kabosu.available?
 
-    assert_raises(Daidai::Sudachi::MissingDependency) { Daidai.conjugate("食べる") }
+    assert_raises(Daidai::Kabosu::MissingDependency) { Daidai.conjugate("食べる") }
   end
 end

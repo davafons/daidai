@@ -3,21 +3,25 @@
 module Daidai
   class Error < StandardError; end
 
-  # Optional Sudachi-backed resolver. Turns a bare word — even an inflected one
-  # like "食べている" — into its dictionary form and JMdict part of speech, so you
-  # can conjugate without naming the POS yourself:
+  # Optional resolver backed by the `kabosu` gem (Ruby bindings for the Sudachi
+  # morphological analyzer). Turns a bare word — even an inflected one like
+  # "食べている" — into its dictionary form and JMdict part of speech, so you can
+  # conjugate without naming the POS yourself:
   #
-  #   Daidai.conjugate("食べている")   # Sudachi finds 食べる / v1, then conjugates
+  #   Daidai.conjugate("食べている")   # kabosu finds 食べる / v1, then conjugates
   #
-  # This needs the `kabosu` gem (Sudachi bindings) plus an installed Sudachi
-  # dictionary. Neither is a hard dependency of daidai — the rest of the gem is
-  # pure Ruby and zero-dependency. The escape hatch is simply to pass the POS, in
-  # which case Sudachi never runs:
+  # This needs the `kabosu` gem plus an installed Sudachi dictionary. Neither is
+  # a hard dependency of daidai — the rest of the gem is pure Ruby and
+  # zero-dependency. The escape hatch is simply to pass the POS, in which case
+  # kabosu never runs:
   #
   #   Daidai.conjugate("食べる", "v1")
-  module Sudachi
-    # Raised when a POS-less conjugation is requested but Sudachi (the `kabosu`
-    # gem and a dictionary) isn't available.
+  #
+  # NOTE: this module is nested inside Daidai, so the top-level kabosu gem must
+  # be referenced as ::Kabosu to avoid resolving back to Daidai::Kabosu.
+  module Kabosu
+    # Raised when a POS-less conjugation is requested but the `kabosu` gem and a
+    # Sudachi dictionary aren't available.
     class MissingDependency < Error; end
 
     # Sudachi 活用型 (conjugation type) => JMdict POS code. Sudachi names the verb
@@ -40,7 +44,7 @@ module Daidai
     class << self
       # Resolve `text` to { word:, pos:, reading: } from its first inflecting
       # morpheme, or nil when nothing conjugatable is found. Raises
-      # MissingDependency when Sudachi isn't installed.
+      # MissingDependency when kabosu/a dictionary isn't installed.
       def resolve(text)
         morphemes = tokenizer.tokenize(text).to_a
         index = morphemes.index { |m| inflecting?(m.part_of_speech) }
@@ -64,7 +68,7 @@ module Daidai
         LEMMA_POS[lemma] || from_conjugation_type(pos)
       end
 
-      # Whether the Sudachi path is usable (kabosu loadable + a dictionary present).
+      # Whether the resolver is usable (kabosu loadable + a dictionary present).
       def available?
         !tokenizer.nil?
       rescue MissingDependency
@@ -111,7 +115,7 @@ module Daidai
 
       def build_tokenizer
         require "kabosu"
-        Kabosu::Dictionary.new(system_dict: Kabosu::Dictionary.path).create(mode: :c)
+        ::Kabosu::Dictionary.new(system_dict: ::Kabosu::Dictionary.path).create(mode: :c)
       rescue LoadError
         raise MissingDependency,
               'Daidai.conjugate(word) without a POS needs the `kabosu` gem. Add `gem "kabosu"` ' \
