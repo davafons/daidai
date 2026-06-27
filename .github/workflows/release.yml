@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Build source gem
+        run: |
+          mkdir -p pkg
+          version=$(ruby -r ./lib/daidai/version -e 'print Daidai::VERSION')
+          gem build daidai.gemspec --output "pkg/daidai-${version}.gem"
+
+      - name: List artifacts to publish
+        run: ls -lh pkg/
+
+      - uses: rubygems/configure-rubygems-credentials@v1.0.0
+
+      - name: Push gems to RubyGems
+        run: |
+          set -euo pipefail
+          for gem in pkg/*.gem; do
+            echo "Pushing $gem"
+            # Capture combined output so we can distinguish "already published"
+            # (idempotent re-run) from real failures (auth, network, malformed).
+            output=$(gem push "$gem" 2>&1) && status=0 || status=$?
+            echo "$output"
+            if [ "$status" -eq 0 ]; then
+              continue
+            fi
+            if echo "$output" | grep -q "Repushing of gem versions is not allowed"; then
+              echo "  -> already published, skipping"
+              continue
+            fi
+            echo "  -> push failed (exit $status), aborting"
+            exit "$status"
+          done
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION_TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$VERSION_TAG" &>/dev/null; then
+            echo "Release $VERSION_TAG already exists, uploading assets to it"
+            gh release upload "$VERSION_TAG" pkg/daidai-*.gem --clobber
+          else
+            gh release create "$VERSION_TAG" pkg/daidai-*.gem \
+              --title "$VERSION_TAG" \
+              --generate-notes
+          fi

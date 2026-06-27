@@ -1,32 +1,41 @@
-name: CI
+name: Edge
 
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
-  build:
-    name: Ruby ${{ matrix.ruby }}
+  edge:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ruby:
-          - "3.1"
-          - "3.2"
-          - "3.3"
-          - "3.4"
-          - head
-    continue-on-error: ${{ matrix.ruby == 'head' }}
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ${{ matrix.ruby }}
+          ruby-version: "3.3"
           bundler-cache: true
 
-      - name: Lint and test
-        run: bundle exec rake
+      - name: Set dev version
+        run: |
+          # Generate a prerelease version like 0.1.0.dev.20260429.abcdef1
+          base_version=$(ruby -r ./lib/daidai/version -e "puts Daidai::VERSION")
+          date=$(date -u +%Y%m%d)
+          sha=$(git rev-parse --short HEAD)
+          dev_version="${base_version}.dev.${date}.${sha}"
+
+          sed -i "s/VERSION = \".*\"/VERSION = \"${dev_version}\"/" lib/daidai/version.rb
+          echo "DEV_VERSION=${dev_version}" >> "$GITHUB_ENV"
+          echo "Publishing edge version: ${dev_version}"
+
+      - name: Build gem into pkg/
+        run: |
+          mkdir -p pkg
+          gem build daidai.gemspec --output "pkg/daidai-${DEV_VERSION}.gem"
+
+      - uses: rubygems/configure-rubygems-credentials@v1.0.0
+
+      - name: Push dev gem to RubyGems
+        run: gem push "pkg/daidai-${DEV_VERSION}.gem"
