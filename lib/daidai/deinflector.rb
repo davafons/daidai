@@ -14,6 +14,11 @@ module Daidai
   Deinflection = Struct.new(:term, :inflections, :dictionary_form, keyword_init: true) do
     def dictionary_form? = dictionary_form
 
+    # The inflections as friendly English labels for display (e.g. "-いる" =>
+    # "progressive", "-て" => "te-form"), via Deinflector.label. Localise these
+    # downstream (i18n) if your app is multilingual.
+    def labels = inflections.map { |name| Deinflector.label(name) }
+
     def to_s = inflections.empty? ? term : "#{term} [#{inflections.join(", ")}]"
 
     def inspect = "#<Daidai::Deinflection #{self}>"
@@ -34,6 +39,39 @@ module Daidai
   module Deinflector
     DATA_FILE = File.expand_path("resources/japanese-transforms.json", __dir__)
 
+    # Friendly English labels for the deinflection rule names #deinflect emits.
+    # The underlying names (ported from Yomitan) are terse and sometimes symbolic
+    # ("-いる", "-て", "-ます"); these name the grammar instead ("progressive",
+    # "te-form", "polite"). This is daidai's curation, not Yomitan data — it is
+    # the single source of truth for naming an inflection, so consumers localise
+    # these rather than maintain their own map. Keyed by the rule name; see
+    # Deinflector.label for the lookup (which falls back to the name itself).
+    LABELS = {
+      "-いる" => "progressive", "-て" => "te-form", "-た" => "past",
+      "-ます" => "polite", "negative" => "negative", "passive" => "passive",
+      "potential" => "potential", "potential or passive" => "potential / passive",
+      "causative" => "causative", "short causative" => "short causative",
+      "volitional" => "volitional", "volitional slang" => "volitional (slang)",
+      "imperative" => "imperative", "continuative" => "continuative",
+      "-たい" => "desiderative (-tai)", "-たら" => "conditional (-tara)",
+      "-たり" => "representative (-tari)", "-ば" => "provisional (-ba)",
+      "-ゃ" => "conditional contraction (-ya)", "-ちゃ" => "contracted (-cha)",
+      "-ちゃう" => "completive (-chau)", "-ちまう" => "completive (-chimau)",
+      "-しまう" => "completive (-shimau)", "-おく" => "preparatory (-oku)",
+      "-そう" => "looks like (-sou)", "-すぎる" => "excessive (-sugiru)",
+      "-過ぎる" => "excessive (-sugiru)", "-なさい" => "polite imperative (-nasai)",
+      "-さ" => "nominalization (-sa)", "-げ" => "appearance (-ge)",
+      "-がる" => "showing signs (-garu)", "-やがる" => "contemptuous (-yagaru)",
+      "-ず" => "negative (-zu)", "-ぬ" => "negative (-nu)", "-ん" => "negative (-n)",
+      "-ざる" => "negative (-zaru)", "-ねば" => "negative conditional (-neba)",
+      "-まい" => "negative volitional (-mai)", "-く" => "adverbial (-ku)",
+      "-き" => "attributive (-ki)", "-む" => "archaic volitional (-mu)",
+      "-んばかり" => "on the verge (-nbakari)", "-んとする" => "intentive (-ntosuru)",
+      "-え" => "slang (-e)", "n-slang" => "n-slang",
+      "imperative negative slang" => "imperative negative (slang)",
+      "kansai-ben" => "kansai dialect"
+    }.freeze
+
     # One deinflection rule: a test for the inflected form and how to undo it.
     Rule = Struct.new(:is_inflected, :deinflect, :conditions_in, :conditions_out, keyword_init: true)
 
@@ -53,6 +91,13 @@ module Daidai
           .reject { |t| t.trace.empty? }
           .map { |t| to_deinflection(t) }
           .uniq { |d| [ d.term, d.inflections ] }
+      end
+
+      # Friendly English label for a deinflection rule name (the strings in a
+      # Deinflection's #inflections), e.g. "-いる" => "progressive". Falls back to
+      # the name itself for anything not in LABELS, so it is always safe to call.
+      def label(name)
+        LABELS.fetch(name.to_s, name.to_s)
       end
 
       # The raw transformer output (a TransformedText per reachable form, including

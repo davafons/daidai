@@ -189,9 +189,15 @@ Each result is a `Daidai::Deinflection`:
 d = Daidai.deinflect("食べてる").find { |x| x.term == "食べる" }
 d.term              # => "食べる"             (the candidate dictionary form)
 d.inflections       # => ["-いる", "-て"]      (rule names, surface to dictionary)
+d.labels            # => ["progressive", "te-form"]   (friendly English names)
 d.dictionary_form?  # => true                (chain lands on a known dictionary form)
 d.to_s              # => "食べる [-いる, -て]"
 ```
+
+`inflections` are the stable rule ids (ported from Yomitan, terse by design);
+`labels` names the grammar for display. `Daidai::Deinflector.label("-いる")` does
+the single lookup (falling back to the id for anything uncurated). Localise the
+labels downstream if your app is multilingual.
 
 Deinflection is rule-based and **dictionary-free**, so it returns *every* base
 form the rules can reach, many of which are not real words (食べてる also yields

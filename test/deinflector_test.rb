@@ -67,6 +67,26 @@ class DeinflectorTest < Minitest::Test
     assert_empty Daidai.deinflect(nil)
   end
 
+  def test_labels_name_the_grammar
+    d = Daidai.deinflect("食べてる").find { |x| x.term == "食べる" }
+
+    assert_equal %w[-いる -て], d.inflections
+    assert_equal %w[progressive te-form], d.labels
+  end
+
+  def test_label_falls_back_to_the_name
+    assert_equal "progressive", Daidai::Deinflector.label("-いる")
+    assert_equal "negative", Daidai::Deinflector.label("negative")
+    assert_equal "future-rule", Daidai::Deinflector.label("future-rule")
+  end
+
+  def test_every_emitted_rule_name_has_a_curated_label
+    names = Daidai::Deinflector.send(:data)["transforms"].values.map { |t| t["name"] }.uniq
+    uncurated = names.reject { |name| Daidai::Deinflector::LABELS.key?(name) }
+
+    assert_empty uncurated, "rule names without a curated label: #{uncurated.inspect}"
+  end
+
   def test_deinflection_to_s
     found = Daidai.deinflect("食べてる").find { |d| d.term == "食べる" }
 

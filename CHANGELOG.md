@@ -6,6 +6,15 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-27
+
+### Added
+
+- `Daidai::Deinflection#labels` and `Daidai::Deinflector.label(name)`: friendly
+  English names for deinflection rules ("-いる" → "progressive", "-て" →
+  "te-form"). daidai now owns the inflection-naming vocabulary so consumers
+  localise it rather than each maintaining their own map.
+
 ## [0.1.1] - 2026-06-27
 
 ### Changed
@@ -35,6 +44,7 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   inverse of `#conjugate`). Ported from Yomitan's Japanese language transforms;
   also covers colloquial contractions (てる, ちゃう, …). See `Daidai::Deinflector`.
 
-[Unreleased]: https://github.com/davafons/daidai/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/davafons/daidai/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/davafons/daidai/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/davafons/daidai/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/davafons/daidai/releases/tag/v0.1.0
