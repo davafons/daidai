@@ -109,4 +109,12 @@ class ConjugatorTest < Minitest::Test
     assert_equal "勉強しない", text("勉強", "vs", :non_past, negative: true)
     assert_equal "勉強した", text("勉強", "vs", :past)
   end
+
+  def test_remaining_godan_forms
+    assert_equal "書き", text("書く", "v5k", :stem) # continuative / masu-stem
+    assert_equal "書いたり", text("書く", "v5k", :alternative)
+    assert_equal "書こう",    text("書く", "v5k", :volitional)
+    assert_equal "書くな",    text("書く", "v5k", :imperative, negative: true) # prohibitive
+    assert_equal "書かれます", text("書く", "v5k", :passive, polite: true)
+  end
 end

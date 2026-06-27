@@ -30,6 +30,10 @@ module Daidai
     def negative? = negative
     def polite?   = polite
 
+    # The primary (most standard) variant for its form/polarity/formality; see
+    # Word#variants for the alternatives (e.g. ～なくて beside ～ないで).
+    def primary? = onum == 1
+
     # Human label for this form ("Past", "Te-form", …).
     def label = FORMS[name]
 

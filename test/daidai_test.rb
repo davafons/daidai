@@ -81,6 +81,14 @@ class DaidaiTest < Minitest::Test
     assert_includes te_neg, "書かないで"
   end
 
+  def test_primary_variant
+    w = Daidai.conjugate("書く", "v5k")
+    assert_predicate w.te(negative: true), :primary? # [] returns the primary (onum 1)
+    variants = w.variants(:te, negative: true)
+    assert_predicate variants.first, :primary?
+    refute_predicate variants.last, :primary?
+  end
+
   def test_word_is_enumerable
     w = Daidai.conjugate("書く", "v5k")
     assert_operator w.forms.size, :>, 10
