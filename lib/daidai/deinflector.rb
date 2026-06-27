@@ -6,12 +6,12 @@ module Daidai
   # A single deinflection candidate: a base-form `term` reached from the input by
   # applying `inflections` (transform names, ordered from the surface form inward
   # to the dictionary form). `dictionary_form?` is true when the rule chain lands
-  # on a recognised dictionary form (a likely real lemma) — useful for callers
+  # on a recognised dictionary form (a likely real lemma), useful for callers
   # without their own dictionary to look the term up in.
   #
   #   Daidai.deinflect("食べてる")   # candidate base forms, each with named inflections;
   #                                  # one is #<Daidai::Deinflection 食べる [-いる, -て]>
-  Deinflection = Struct.new(:term, :inflections, :conditions, :dictionary_form, keyword_init: true) do
+  Deinflection = Struct.new(:term, :inflections, :dictionary_form, keyword_init: true) do
     def dictionary_form? = dictionary_form
 
     def to_s = inflections.empty? ? term : "#{term} [#{inflections.join(", ")}]"
@@ -94,7 +94,6 @@ module Daidai
           # trace is newest-first (innermost rule first); reverse so the names read
           # from the surface form inward to the dictionary form.
           inflections: transformed.trace.reverse.map { |frame| transforms_by_id[frame[:transform]].name },
-          conditions: transformed.conditions,
           dictionary_form: transformed.conditions.anybits?(dictionary_mask)
         )
       end

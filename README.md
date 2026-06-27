@@ -194,14 +194,14 @@ d.to_s              # => "食べる [-いる, -て]"
 ```
 
 Deinflection is rule-based and **dictionary-free**, so it returns *every* base
-form the rules can reach — many of which are not real words (食べてる also yields
+form the rules can reach, many of which are not real words (食べてる also yields
 食べつ as a hypothetical potential). It is meant to feed a dictionary lookup: keep
 the candidates whose `term` is a real entry. If you have no dictionary, filtering
 to `dictionary_form?` candidates keeps the plausible lemmas.
 
 This pairs naturally with a dictionary like JMdict: deinflect the query, look up
 each candidate `term`, and you have the lemma, its part of speech, and the named
-inflection — without a morphological analyzer. (For a single authoritative lemma
+inflection, without a morphological analyzer. (For a single authoritative lemma
 + reading from arbitrary text, including full sentences, the kabosu path above is
 still the tool; the two are complementary.)
 
@@ -211,7 +211,7 @@ Japanese language transforms and is vendored as JSON under
 
 ## Data & tables
 
-All of the linguistic knowledge lives in four tab-separated tables vendored under `lib/daidai/resources/`, taken from **JMdictDB** (the maintained home of these tables; jconj is the standalone reference implementation Daidai ports):
+All of the *conjugation* knowledge lives in four tab-separated tables vendored under `lib/daidai/resources/`, taken from **JMdictDB** (the maintained home of these tables; jconj is the standalone reference implementation Daidai ports). (The deinflection rules live beside them as `japanese-transforms.json`; see [Deinflection](#deinflection-inflected-form-to-dictionary-form).)
 
 | File | Contents |
 |------|----------|
@@ -232,10 +232,11 @@ This downloads the latest `conj.csv`, `conjo.csv`, `conotes.csv`, and `kwpos.csv
 
 ## Data & attribution
 
-The conjugation algorithm and tables are not original to Daidai. They come from:
+The conjugation and deinflection logic are not original to Daidai. They come from:
 
 - **JMdictDB** (<https://gitlab.com/yamagoya/jmdictdb>), by Stuart McGraw: the actively-maintained home of the conjugation tables and part-of-speech taxonomy, under Jim Breen's **Electronic Dictionary Research and Development Group (EDRDG)**, <https://www.edrdg.org/>.
 - **jconj** (<https://gitlab.com/yamagoya/jconj>): the standalone, table-based conjugator whose algorithm Daidai ports to Ruby.
+- **Yomitan** (<https://github.com/yomidevs/yomitan>), by the Yomitan Authors: the source of the deinflection rule set and transformer that `Daidai.deinflect` ports to Ruby.
 
 Because the upstream work is GPL-licensed, Daidai inherits that lineage and is distributed under the **GPL-3.0** license. The JMdict/JMdictDB data is used under the EDRDG licence; please retain the attribution above and the `NOTICE` file in any redistribution.
 
