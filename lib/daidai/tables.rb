@@ -34,7 +34,7 @@ module Daidai
 
       # JMdict POS keyword ("v5k", "adj-i", …) => conjo pos id (Integer)
       def pos_ids
-        @pos_ids ||= read("kwpos.csv", headers: %w[id kw descr]).to_h { |r| [ r["kw"], r["id"].to_i ] }
+        @pos_ids ||= read("kwpos.csv").to_h { |r| [ r["kw"], r["id"].to_i ] }
       end
 
       def reload!
