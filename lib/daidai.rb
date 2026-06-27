@@ -17,10 +17,23 @@ require_relative "daidai/conjugator"
 #   Daidai.conjugatable?("v1")  #=> true
 module Daidai
   class << self
-    # Conjugate a dictionary-form word. `pos` is a JMdict part-of-speech code
-    # (e.g. "v5k", "adj-i") or an array of them — the first conjugatable wins.
-    # Returns a Daidai::Result, or nil when nothing is conjugatable.
-    def conjugate(pos:, kanji: nil, reading: nil)
+    # Conjugate a dictionary-form word.
+    #
+    #   Daidai.conjugate("書く", "v5k")                 # kanji surface forms
+    #   Daidai.conjugate("書く", "v5k", reading: "かく")  # + the kana of each form
+    #   Daidai.conjugate("する", "vs-i")                # kana word (is its own reading)
+    #
+    # `word` is the dictionary form (kanji surface or kana). `pos` is a JMdict
+    # part-of-speech code ("v5k", "adj-i", …) or an array of them — the first
+    # conjugatable one wins. `reading` is optional: pass it only when you also
+    # want each form's kana (conjugation rewrites the okurigana, which is already
+    # in the surface, so the kanji forms need no reading). Returns a Daidai::Word,
+    # or nil when nothing is conjugatable.
+    def conjugate(word, pos, reading: nil)
+      return nil if word.nil? || word.to_s.empty?
+
+      kanji = word.match?(/\p{Han}/) ? word : nil
+      reading ||= kanji ? nil : word
       Conjugator.conjugate(kanji: kanji, reading: reading, pos: pos)
     end
 

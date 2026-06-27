@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "tables"
-require_relative "result"
+require_relative "word"
 
 module Daidai
   # Turns a dictionary-form word + its JMdict part-of-speech into the full
@@ -47,7 +47,7 @@ module Daidai
         return nil if kanji.nil? && reading.empty?
 
         forms = build(strat, kanji, reading)
-        forms.empty? ? nil : Result.new(pos: code, kind: strat[:kind], forms: forms)
+        forms.empty? ? nil : Word.new(word: kanji || reading, pos: code, kind: strat[:kind], forms: forms)
       end
 
       private
@@ -70,7 +70,7 @@ module Daidai
               rf = inflect(strat, reading, row)
               next if kf.nil? && rf.nil?
 
-              Form.new(conjugation: conj_id, name: Tables.conj[conj_id],
+              Form.new(name: FORM_BY_ID[conj_id],
                        negative: negative, polite: polite, onum: onum,
                        kanji: kf, reading: rf)
             end
