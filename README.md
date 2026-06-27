@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://rubygems.org/gems/daidai"><img src="https://img.shields.io/gem/v/daidai" alt="Gem Version"></a>
-  <a href="https://github.com/davafons/daidai/actions/workflows/ci.yml"><img src="https://github.com/davafons/daidai/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/basecamp/gh-signoff"><img src="https://img.shields.io/badge/CI-signoff-blue" alt="Signoff"></a>
   <a href="https://github.com/davafons/daidai/blob/main/LICENSE"><img src="https://img.shields.io/github/license/davafons/daidai" alt="License"></a>
   <a href="https://rubygems.org/gems/daidai"><img src="https://img.shields.io/gem/dt/daidai" alt="Downloads"></a>
 </p>
@@ -208,7 +208,17 @@ bundle exec rake lint    # RuboCop
 bundle exec rake         # lint + test (default)
 ```
 
-To refresh the vendored conjugation tables from upstream, see `rake daidai:sync` above.
+### Signing off
+
+This project uses [gh-signoff](https://github.com/basecamp/gh-signoff) instead of cloud CI — you run the checks locally and sign off on the commit, which sets a `signoff` status check that branch protection requires:
+
+```sh
+gh extension install basecamp/gh-signoff   # one-time
+bundle exec rake                           # lint + test must pass first
+gh signoff                                 # mark the current commit verified
+```
+
+`gh signoff install` configures `main` to require the signoff status. To refresh the vendored conjugation tables from upstream, see `rake daidai:sync` above.
 
 ## License
 
