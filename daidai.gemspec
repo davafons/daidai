@@ -24,6 +24,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir[
     "lib/**/*.rb",
     "lib/daidai/resources/*.csv",
+    "lib/daidai/resources/*.json",
     "CHANGELOG.md",
     "LICENSE",
     "NOTICE",

@@ -3,6 +3,7 @@
 require_relative "daidai/version"
 require_relative "daidai/conjugator"
 require_relative "daidai/kabosu"
+require_relative "daidai/deinflector"
 
 # Daidai (橙) — Japanese verb and adjective conjugation in pure Ruby.
 #
@@ -51,6 +52,24 @@ module Daidai
     # Whether `pos` (a code or array of codes) describes a conjugatable word.
     def conjugatable?(pos)
       Conjugator.conjugatable?(pos)
+    end
+
+    # Deinflect an inflected surface form back to its dictionary form(s), naming
+    # each inflection along the way (the inverse of #conjugate):
+    #
+    #   # each result has a `term` and its named `inflections` (surface -> dictionary):
+    #   Daidai.deinflect("食べてる")    # includes #<Daidai::Deinflection 食べる [-いる, -て]>
+    #   Daidai.deinflect("読まなかった") # includes #<Daidai::Deinflection 読む [-た, negative]>
+    #
+    # Returns every candidate the rules can reach (each a Daidai::Deinflection);
+    # the rules are string-based and dictionary-free, so many candidates are not
+    # real words. A caller with a dictionary looks up each `term`; one without can
+    # keep only `dictionary_form?` candidates. Pure and offline — unlike the
+    # POS-less #conjugate, it needs no kabosu.
+    def deinflect(text)
+      return [] if text.nil? || text.to_s.empty?
+
+      Deinflector.deinflect(text)
     end
   end
 end

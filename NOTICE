@@ -18,6 +18,17 @@ conjugation algorithm is a faithful port of jconj's.
     Licensed under the GNU General Public License.
 
 -------------------------------------------------------------------------------
+Yomitan
+-------------------------------------------------------------------------------
+The deinflector (lib/daidai/deinflector.rb) and its rule set vendored under
+lib/daidai/resources/japanese-transforms.json are ported from Yomitan's
+Japanese language transforms and LanguageTransformer.
+
+    Yomitan — by the Yomitan Authors
+    https://github.com/yomidevs/yomitan
+    Licensed under the GNU General Public License v3.0.
+
+-------------------------------------------------------------------------------
 JMdict / JMdictDB (EDRDG)
 -------------------------------------------------------------------------------
 The conjugation tables and the part-of-speech taxonomy originate in the
