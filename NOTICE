@@ -1,0 +1,31 @@
+Daidai
+Copyright (c) davafons
+
+This product bundles conjugation data and ports the conjugation algorithm from
+the JMdictDB project, which are distributed under the GNU General Public
+License. Because of this lineage, Daidai itself is licensed under the GPL-3.0
+(see LICENSE).
+
+-------------------------------------------------------------------------------
+jconj
+-------------------------------------------------------------------------------
+The conjugation tables vendored under lib/daidai/resources/ (conj.csv,
+conjo.csv, conotes.csv, kwpos.csv) are copied verbatim from jconj, and Daidai's
+conjugation algorithm is a faithful port of jconj's.
+
+    jconj — by Stuart McGraw
+    https://gitlab.com/yamagoya/jconj
+    Licensed under the GNU General Public License.
+
+-------------------------------------------------------------------------------
+JMdict / JMdictDB (EDRDG)
+-------------------------------------------------------------------------------
+The conjugation tables and the part-of-speech taxonomy originate in the
+JMdictDB / JMdict project, maintained by Jim Breen's Electronic Dictionary
+Research and Development Group (EDRDG).
+
+    JMdict / JMdictDB
+    https://www.edrdg.org/
+    Used under the EDRDG Licence.
+
+Please retain this NOTICE file and the attributions above in any redistribution.
