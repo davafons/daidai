@@ -9,6 +9,20 @@
 
 Pure-Ruby Japanese verb and adjective conjugation. Daidai (橙) is table-driven: all the grammar lives in the conjugation tables from [JMdictDB](https://gitlab.com/yamagoya/jmdictdb) (Jim Breen's [EDRDG](https://www.edrdg.org/)) — the same tables that power EDRDG's live conjugator — applied by a faithful Ruby port of [jconj](https://gitlab.com/yamagoya/jconj)'s algorithm. No native extension, no runtime services — just the tables and a small, app-friendly API.
 
+```ruby
+verb = Daidai.conjugate("書く", "v5k")    # a word + its JMdict part of speech
+
+verb.past                        # => 書いた
+verb.past(polite: true)          # => 書きました
+verb.te                          # => 書いて
+verb.non_past(negative: true)    # => 書かない
+verb.polite.negative.past        # => 書きませんでした   (fluent, and chainable)
+
+# Don't know the part of speech? Let kabosu (Sudachi) resolve it — even from an
+# already-inflected word:
+Daidai.conjugate("食べている").word   # => "食べる"
+```
+
 ## Installation
 
 - Ruby >= 3.1
@@ -121,6 +135,38 @@ Daidai.conjugatable?(["n", "v1"])      # => true   - first conjugatable code win
 ```
 
 When `pos` is an array, `Daidai.conjugate` likewise picks the first conjugatable code.
+
+## Conjugate by word alone (optional)
+
+Don't have the part of speech? Omit it, and Daidai uses the optional [`kabosu`](https://github.com/davafons/kabosu) gem (Ruby bindings for the [Sudachi](https://github.com/WorksApplications/sudachi.rs) morphological analyzer) to resolve the dictionary form, POS and reading from any input — **including inflected ones**:
+
+```ruby
+Daidai.conjugate("食べている").word   # => "食べる"   (progressive → its dictionary verb)
+Daidai.conjugate("行った").word       # => "行く"     (irregular v5k-s, correctly identified)
+Daidai.conjugate("高くない").word     # => "高い"     (negative adjective → adj-i)
+Daidai.conjugate("勉強した").word     # => "勉強"     (noun + する → vs)
+Daidai.conjugate("猫")               # => nil        (not conjugatable)
+```
+
+This resolves the word so you can conjugate it (forward inflection from a dictionary entry). It is **not** a full deinflection labeller — it finds the entry, it does not yet *name* the inflection ("…is the progressive of…"). For lemma lookup in a larger app you likely already have a tokenizer; this is a convenience for the conjugation use case.
+
+`kabosu` and a Sudachi dictionary are **not** dependencies of Daidai — the gem stays pure Ruby. Add them only if you want this path:
+
+```ruby
+# Gemfile
+gem "daidai"
+gem "kabosu"
+```
+
+```sh
+bundle exec rake kabosu:install   # download a Sudachi dictionary (one-time)
+```
+
+Without them, the POS-less path raises `Daidai::Kabosu::MissingDependency`. The escape hatch is always to pass the POS yourself — then kabosu never loads:
+
+```ruby
+Daidai.conjugate("食べる", "v1")   # pure Ruby, no kabosu
+```
 
 ## Data & tables
 
