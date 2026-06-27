@@ -1,0 +1,45 @@
+AllCops:
+  TargetRubyVersion: 3.1
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "lib/daidai/resources/**/*"
+    - "vendor/**/*"
+    - "pkg/**/*"
+    - "tmp/**/*"
+
+# Daidai favours readable prose over hard metric limits; the conjugator and
+# tables are inherently long. Keep the structural cops, drop the size ones.
+Metrics:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Layout/LineLength:
+  Max: 120
+
+# House style (shared with shirabe): pad array brackets — [ "a", "b" ].
+Layout/SpaceInsideArrayLiteralBrackets:
+  EnforcedStyle: space
+
+# Dev dependencies live in the gemspec (same as the sibling gems), not the Gemfile.
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+# The resource-sync tasks define their file/URL lists inside the rake
+# namespace block, mirroring the sibling gems' Rakefiles.
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - "Rakefile"
+
+# The version is the single source of truth in version.rb; no need to mirror
+# the floor into the gemspec a second time.
+Gemspec/RequiredRubyVersion:
+  Enabled: false
