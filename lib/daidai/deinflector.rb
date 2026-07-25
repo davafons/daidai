@@ -62,6 +62,7 @@ module Daidai
       "-過ぎる" => "excessive (-sugiru)", "-なさい" => "polite imperative (-nasai)",
       "-さ" => "nominalization (-sa)", "-げ" => "appearance (-ge)",
       "-がる" => "showing signs (-garu)", "-やがる" => "contemptuous (-yagaru)",
+      "-ないで" => "negative (-naide)",
       "-ず" => "negative (-zu)", "-ぬ" => "negative (-nu)", "-ん" => "negative (-n)",
       "-ざる" => "negative (-zaru)", "-ねば" => "negative conditional (-neba)",
       "-まい" => "negative volitional (-mai)", "-く" => "adverbial (-ku)",

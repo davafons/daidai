@@ -33,6 +33,15 @@ class DeinflectorTest < Minitest::Test
     assert_equal %w[negative], chain("高くない", "高い")
   end
 
+  # Negative te-form (negative request / "without doing"). Yomitan has no rule for
+  # 〜ないで; daidai adds it, resolving through the plain negative to the base across
+  # every verb class. (〜なくて already resolves via the -て + negative chain.)
+  def test_negative_te_naide
+    assert_equal [ "-ないで", "negative" ], chain("食べないで", "食べる") # ichidan
+    assert_equal [ "-ないで", "negative" ], chain("行かないで", "行く") # godan
+    assert_equal [ "-ないで", "negative" ], chain("読まないで", "読む")
+  end
+
   def test_causative_passive_past
     assert_equal [ "-た", "potential or passive", "causative" ], chain("食べさせられた", "食べる")
   end
@@ -94,15 +103,16 @@ class DeinflectorTest < Minitest::Test
   end
 
   # Round-trip: the common plain forms Daidai conjugates should deinflect back to
-  # the dictionary word. (jconj over-generates some unusual polite combinations
-  # and picks variants — ～ないで, prohibitive ～な — that Yomitan's deinflector
-  # intentionally doesn't cover, so the property only holds for the core forms.)
+  # the dictionary word — including the negative te-form (食べないで / 食べなくて), which
+  # daidai covers beyond Yomitan. The one plain form still not deinflected is the
+  # negative imperative (prohibitive 〜な, 食べるな): 〜な is too ambiguous for a safe
+  # rule, so it's left to the reader's dictionary-form matching.
   def test_round_trip_plain_forms
     cases = { "食べる" => "v1", "書く" => "v5k", "飲む" => "v5m" }
     cases.each do |word, pos|
       Daidai.conjugate(word, pos).forms.each do |form|
         next if form.polite? || form.text == word
-        next if form.negative? && %i[te imperative].include?(form.name)
+        next if form.negative? && form.name == :imperative # prohibitive 〜な: intentionally uncovered
 
         terms = Daidai.deinflect(form.text).map(&:term)
         assert_includes terms, word, "#{form.text} (#{form.label}) should deinflect to #{word}"

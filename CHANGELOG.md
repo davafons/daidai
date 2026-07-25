@@ -6,6 +6,17 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-07-25
+
+### Added
+
+- Deinflection of the negative te-form 〜ないで (食べないで, 行かないで, 読まないで →
+  dictionary form). Yomitan's rule set has no entry for it; daidai adds one,
+  resolving 〜ないで through the plain negative (〜ない) to the base across every
+  verb class. (〜なくて already resolved via the -て + negative chain.) The
+  prohibitive 〜な (食べるな) is deliberately left out — 〜な is too ambiguous
+  (sentence particle, na-adjective) for a safe rule.
+
 ## [0.2.1] - 2026-07-25
 
 ### Fixed
