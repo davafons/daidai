@@ -31,6 +31,17 @@ class ConjugatorTest < Minitest::Test
     assert_equal "書いたら", text("書く", "v5k", :conditional)
   end
 
+  def test_godan_u_negative_conditional_upstream_errata
+    # Upstream JMdictDB conjo.csv stores the v5u negative ~tara without the な
+    # (買わかったら); Tables::CONJO_ERRATA corrects it. Every godan-u verb is affected.
+    assert_equal "買わなかったら", text("買う", "v5u", :conditional, negative: true)
+    assert_equal "使わなかったら", text("使う", "v5u", :conditional, negative: true)
+    # Affirmative v5u and other classes were already correct — must stay so.
+    assert_equal "買ったら", text("買う", "v5u", :conditional)
+    assert_equal "読まなかったら", text("読む", "v5m", :conditional, negative: true)
+    assert_equal "書かなかったら", text("書く", "v5k", :conditional, negative: true)
+  end
+
   def test_godan_te_and_past_euphony_across_endings
     assert_equal "泳いで",  text("泳ぐ", "v5g", :te)
     assert_equal "泳いだ",  text("泳ぐ", "v5g", :past)

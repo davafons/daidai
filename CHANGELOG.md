@@ -6,6 +6,16 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-25
+
+### Fixed
+
+- `Daidai.conjugate` now produces the correct godan-u negative conditional
+  (買う → 買わなかったら). The upstream JMdictDB `conjo.csv` stores this one cell
+  without the な (買わかったら); `Tables::CONJO_ERRATA` corrects it at load, so the
+  vendored tables stay byte-identical to upstream while every godan-u verb's
+  negative ~tara comes out right.
+
 ## [0.2.0] - 2026-06-27
 
 ### Added
