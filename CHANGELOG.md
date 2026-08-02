@@ -6,6 +6,71 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-08-03
+
+### Added
+
+- The rest of the must / must not / may / need not set: `permission` (〜てもいい,
+  〜てもかまわない) and `exemption` (〜なくてもいい). Learners meet the four together,
+  so they now deinflect alike.
+- The remaining て-auxiliaries beside `-おく` and `-しまう`: `-てみる`, `-てある`,
+  `-ていく`, `-てくる`. `conditionsIn` is the auxiliary's own verb class, so it may
+  conjugate and the verb is still reached (読んでみた, 読んでみたい).
+- `-べき`, and the 連用形 suffixes `-ながら`, `-つつ`, `-やすい`, `-にくい`. The last two
+  are i-adjectives, so 読みやすかった resolves too.
+- Aspectual compound verbs `-はじめる`/`-始める`, `-つづける`/`-続ける`,
+  `-おわる`/`-終わる`, in both spellings.
+- The benefactives, who the action is done for: `-てあげる`, `-てやる`,
+  `-てさしあげる`, `-てくれる`, `-てくださる`, `-てもらう`, `-ていただく`.
+- `-てください` (and 〜てちょうだい). ください is くださる's irregular imperative and does
+  not conjugate further, so `-てくださる` never matched the commonest polite request
+  in the language.
+- Further 連用形 suffixes: `-がち`, `-っぱなし`, `-気味`, `-かねる`.
+
+  〜かける is excluded for the same reason as 〜だす: the substring にかける strips to
+  にる (煮る), a real word, so it would mis-read 気にかける.
+
+  〜だす, 〜なおす and 〜きる are deliberately absent: they lexicalise, and the
+  dictionary already carries them. 見直す is "to review", not "to see again", and
+  every 〜だす compound checked (泣き出す, 降り出す, 言い出す, 走り出す, 笑い出す,
+  動き出す) is a JMdict entry already. A rule wins nothing there, while 出す as a
+  main verb is everywhere: it read 外に出す as に出す ("煮出す") and 声に出して as にる.
+
+### Fixed
+
+- A shorter construction no longer shadows a longer one. 〜てはいけない matches inside
+  〜なくてはいけない and 〜てもいい inside 〜なくてもいい, so both readings were reachable
+  and a consumer picking by chain length could get `prohibition` for an obligation.
+  The negated forms now land straight on ない, which is both shorter and faithful
+  (〜なくて is ない's te-form), so the right label wins deterministically.
+- The obligation and prohibition constructions resolve when their helper is itself
+  inflected (行かなければならなかった, 食べてはいけなかった). They were gated to the
+  outermost layer; gating on `adj-i` instead lets ならない/いけない deinflect first.
+  This removes the limitation recorded under 0.2.3.
+
+## [0.2.3] - 2026-08-03
+
+### Added
+
+- Deinflection of the obligation and prohibition constructions, which no rule
+  reached before: 行かなければならない, 行かなくてはいけない, 行かないといけない,
+  行かねばならない, 行かなきゃならない, 行かなくちゃ (and the ～ません/～だめ variants)
+  now resolve to 行く, and 食べてはいけない, 読んではいけない, 遊んじゃだめ to their
+  base. Each rule strips only its helper and hands the rest back to a rule that
+  already existed, so the chain shows the whole derivation
+  (`["obligation", "-ば", "negative"]`) instead of one opaque step, and the
+  irregulars come along for free.
+
+  They are labelled as the opposites they are: `obligation (must)` negates the
+  verb and then the helper (行かなければならない, "there is no not-going"), while
+  `prohibition (must not)` leaves the verb plain (食べてはいけない, "eating won't
+  do"). Yomitan's rule set has neither, treating both as multi-word grammar
+  rather than inflection.
+
+  The helper's own inflection is not covered yet: 行かなければならなかった (past) and
+  行かなければならなくて still fall through, because the rules match the construction
+  only as the outermost layer.
+
 ## [0.2.2] - 2026-07-25
 
 ### Added

@@ -119,4 +119,185 @@ class DeinflectorTest < Minitest::Test
       end
     end
   end
+
+  # The obligation / prohibition constructions. Each strips only its helper and
+  # hands the rest to a rule that already existed, so the chain shows the whole
+  # derivation rather than a single opaque step.
+  def test_obligation_via_provisional
+    assert_equal %w[obligation -ば negative], chain("行かなければならない", "行く")
+    assert_equal %w[obligation -ば negative], chain("行かなければなりません", "行く")
+  end
+
+  def test_obligation_via_te_form
+    assert_equal %w[obligation negative], chain("行かなくてはいけない", "行く")
+    assert_equal %w[obligation negative], chain("行かなくちゃいけない", "行く")
+  end
+
+  # The helper can be elided entirely and the obligation still reads.
+  def test_obligation_with_the_helper_left_off
+    assert_equal %w[obligation negative], chain("行かなくちゃ", "行く")
+  end
+
+  def test_obligation_via_to_and_neba
+    assert_equal %w[obligation negative], chain("行かないといけない", "行く")
+    assert_equal %w[obligation -ねば], chain("行かねばならない", "行く")
+  end
+
+  def test_obligation_reaches_irregular_verbs
+    assert_equal %w[obligation -ば negative], chain("来なければならない", "来る")
+    assert_equal %w[obligation -ば negative], chain("しなければならない", "する")
+  end
+
+  # Prohibition leaves the verb un-negated, which is what makes it the opposite
+  # of obligation rather than another spelling of it.
+  def test_prohibition
+    assert_equal %w[prohibition -て], chain("食べてはいけない", "食べる")
+    assert_equal %w[prohibition -て], chain("忘れてはならない", "忘れる")
+  end
+
+  def test_prohibition_after_a_voiced_te_form
+    assert_equal %w[prohibition -て], chain("読んではいけない", "読む")
+    assert_equal %w[prohibition -て], chain("遊んじゃだめ", "遊ぶ")
+  end
+
+  def test_obligation_and_prohibition_are_labelled_as_opposites
+    assert_equal "obligation (must)", Daidai::Deinflector.label("obligation")
+    assert_equal "prohibition (must not)", Daidai::Deinflector.label("prohibition")
+  end
+
+  # A shorter suffix shadows a longer one: てはいけない matches inside なくてはいけない
+  # and てもいい inside なくてもいい, so both readings are reachable. Consumers pick by
+  # chain length (Inflection.best), so the negated construction must come out
+  # strictly shorter or the wrong label wins by accident.
+  def shortest(surface, lemma)
+    Daidai.deinflect(surface).select { |d| d.term == lemma }.min_by { |d| d.inflections.size }
+  end
+
+  def test_a_negated_construction_outranks_the_shorter_suffix_inside_it
+    assert_equal "obligation", shortest("行かなくてはいけない", "行く").inflections.first
+    assert_equal "obligation", shortest("行かなくちゃいけない", "行く").inflections.first
+    assert_equal "exemption", shortest("行かなくてもいい", "行く").inflections.first
+  end
+
+  # The four-part set learners meet together: must / must not / may / need not.
+  def test_permission
+    assert_equal %w[permission -て], chain("行ってもいい", "行く")
+    assert_equal %w[permission -て], chain("読んでもいい", "読む")
+    assert_equal %w[permission -て], chain("食べてもかまわない", "食べる")
+  end
+
+  def test_exemption
+    assert_equal %w[exemption negative], chain("行かなくてもいい", "行く")
+    assert_equal %w[exemption negative], chain("食べなくてもいい", "食べる")
+  end
+
+  # The helper is an i-adjective, so gating on adj-i lets its own inflection
+  # deinflect first and the construction still resolves in the past.
+  def test_a_construction_still_resolves_when_its_helper_inflects
+    assert_equal %w[-た obligation -ば negative], chain("行かなければならなかった", "行く")
+    assert_equal %w[-た prohibition -て], chain("食べてはいけなかった", "食べる")
+  end
+
+  # The rest of the て-auxiliary family, alongside -おく and -しまう.
+  def test_te_auxiliaries
+    assert_equal %w[-てみる -て], chain("読んでみる", "読む")
+    assert_equal %w[-てある -て], chain("置いてある", "置く")
+    assert_equal %w[-ていく -て], chain("増えていく", "増える")
+    assert_equal %w[-てくる -て], chain("増えてくる", "増える")
+  end
+
+  # conditionsIn is the AUXILIARY's own verb class, which is what lets the
+  # auxiliary conjugate and the whole thing still reach the verb.
+  def test_a_te_auxiliary_that_is_itself_inflected
+    assert_equal %w[-た -てみる -て], chain("読んでみた", "読む")
+    assert_equal %w[-たい -てみる -て], chain("読んでみたい", "読む")
+  end
+
+  def test_beki
+    assert_equal %w[-べき], chain("行くべき", "行く")
+    assert_equal %w[-べき], chain("食べるべき", "食べる")
+    assert_equal %w[-べき], chain("すべき", "する")
+  end
+
+  # 連用形 suffixes with nothing to hand off to: one rule per verb class, derived
+  # from -たい's rule set so the coverage is identical by construction.
+  def test_simultaneous_action
+    assert_equal %w[-ながら], chain("食べながら", "食べる")
+    assert_equal %w[-ながら], chain("読みながら", "読む")
+    assert_equal %w[-ながら], chain("しながら", "する")
+    assert_equal %w[-ながら], chain("来ながら", "来る")
+    assert_equal %w[-つつ], chain("読みつつ", "読む")
+  end
+
+  def test_easy_and_hard_to_do
+    assert_equal %w[-やすい], chain("読みやすい", "読む")
+    assert_equal %w[-やすい], chain("食べやすい", "食べる")
+    assert_equal %w[-にくい], chain("読みにくい", "読む")
+  end
+
+  # They are i-adjectives, so they conjugate and the verb is still reachable.
+  def test_easy_and_hard_to_do_when_themselves_inflected
+    assert_equal %w[-た -やすい], chain("読みやすかった", "読む")
+    assert_equal %w[negative -にくい], chain("書きにくくない", "書く")
+  end
+
+  # Aspectual compound verbs. The auxiliary is a verb, so conditionsIn is its own
+  # class and it may conjugate; both the kana and kanji spellings are covered
+  # because JMdict and real text use each.
+  def test_aspectual_compound_verbs
+    assert_equal %w[-始める], chain("読み始める", "読む")
+    assert_equal %w[-はじめる], chain("読みはじめる", "読む")
+    assert_equal %w[-続ける], chain("読み続ける", "読む")
+    assert_equal %w[-終わる], chain("読み終わる", "読む")
+  end
+
+  def test_an_aspectual_auxiliary_that_is_itself_inflected
+    assert_equal %w[-た -始める], chain("読み始めた", "読む")
+  end
+
+  # The benefactives: who the action is done for. Same handoff as -てみる, and safer
+  # than a bare 連用形 suffix because the literal て is required.
+  def test_benefactives
+    assert_equal %w[-てあげる -て], chain("読んであげる", "読む")
+    assert_equal %w[-てくれる -て], chain("読んでくれる", "読む")
+    assert_equal %w[-てもらう -て], chain("読んでもらう", "読む")
+    assert_equal %w[-ていただく -て], chain("教えていただく", "教える")
+    assert_equal %w[-てくださる -て], chain("書いてくださる", "書く")
+    assert_equal %w[-た -てもらう -て], chain("読んでもらった", "読む")
+  end
+
+  # 〜だす, 〜なおす and 〜きる are deliberately absent. Unlike begin/finish they
+  # lexicalise, and the dictionary already carries them:
+  # 見直す is "to review", not "to see again", and every 〜だす compound checked
+  # (泣き出す, 降り出す, 言い出す, 走り出す, 笑い出す, 動き出す) is a JMdict entry already.
+  # A rule would win nothing there while 出す as a main verb is everywhere: it read
+  # 外に出す as に出す ("煮出す"). These stay the dictionary's job.
+  def test_lexicalised_compounds_are_left_to_the_dictionary
+    assert_nil chain("見直す", "見る")
+    assert_nil chain("読み直す", "読む")
+    assert_nil chain("泣き出す", "泣く")
+  end
+
+  # The commonest polite request there is. ください is くださる's irregular
+  # imperative and does not conjugate further, so -てくださる never matched it.
+  def test_polite_request
+    assert_equal %w[-てください -て], chain("読んでください", "読む")
+    assert_equal %w[-てください -て], chain("来てください", "来る")
+    assert_equal %w[-てください -ないで negative], chain("食べないでください", "食べる")
+  end
+
+  # More 連用形 suffixes. Safe to add where the auxiliary is not also a common
+  # standalone verb: 〜かける is not here for the same reason 〜だす is not, the
+  # substring にかける strips to にる (煮る), a real word.
+  def test_further_renyoukei_suffixes
+    assert_equal %w[-がち], chain("忘れがち", "忘れる")
+    assert_equal %w[-っぱなし], chain("出しっぱなし", "出す")
+    assert_equal %w[-気味], chain("疲れ気味", "疲れる")
+    assert_equal %w[-かねる], chain("分かりかねる", "分かる")
+  end
+
+  def test_kakeru_is_left_out_like_dasu
+    assert_nil chain("気にかける", "にる")
+    assert_nil chain("読みかける", "読む")
+  end
 end
