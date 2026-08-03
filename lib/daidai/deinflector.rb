@@ -89,8 +89,7 @@ module Daidai
       "-てくれる" => "done for me (-tekureru)", "-てくださる" => "done for me, honorific (-tekudasaru)",
       "-てもらう" => "having someone do (-temorau)", "-ていただく" => "having someone do, humble (-teitadaku)",
       "-てください" => "polite request (-tekudasai)",
-      "-がち" => "tends to (-gachi)", "-っぱなし" => "left as it is (-ppanashi)",
-      "-気味" => "a touch of (-gimi)", "-かねる" => "cannot (-kaneru)"
+      "-がち" => "tends to (-gachi)", "-っぱなし" => "left as it is (-ppanashi)", "-かねる" => "cannot (-kaneru)"
     }.freeze
 
     # One deinflection rule: a test for the inflected form and how to undo it.

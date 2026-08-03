@@ -6,6 +6,16 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-08-03
+
+### Removed
+
+- `-気味`, added in 0.2.4. It reached 疲れ気味 → 疲れる by deriving from `-たい`, but
+  気味 is not that kind of suffix: after a noun (風邪気味, 疲れ気味, 遅れ気味, which is
+  how Sudachi reads all three) both halves are already dictionary words and 風邪気味
+  is an entry in its own right, so the rule only ever competed with a better
+  answer. `-がち` stays: 忘れがち has no noun reading to compete with.
+
 ## [0.2.4] - 2026-08-03
 
 ### Added
@@ -25,7 +35,8 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `-てください` (and 〜てちょうだい). ください is くださる's irregular imperative and does
   not conjugate further, so `-てくださる` never matched the commonest polite request
   in the language.
-- Further 連用形 suffixes: `-がち`, `-っぱなし`, `-気味`, `-かねる`.
+- Further 連用形 suffixes: `-がち`, `-っぱなし`, `-かねる`. (`-気味` was added here too
+  and withdrawn in 0.2.5.)
 
   〜かける is excluded for the same reason as 〜だす: the substring にかける strips to
   にる (煮る), a real word, so it would mis-read 気にかける.

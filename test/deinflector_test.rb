@@ -292,7 +292,6 @@ class DeinflectorTest < Minitest::Test
   def test_further_renyoukei_suffixes
     assert_equal %w[-がち], chain("忘れがち", "忘れる")
     assert_equal %w[-っぱなし], chain("出しっぱなし", "出す")
-    assert_equal %w[-気味], chain("疲れ気味", "疲れる")
     assert_equal %w[-かねる], chain("分かりかねる", "分かる")
   end
 
