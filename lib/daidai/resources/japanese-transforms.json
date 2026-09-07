@@ -1,5 +1,25 @@
 {
   "conditions": {
+    "vs-noun": {
+      "name": "Suru verbal noun",
+      "isDictionaryForm": true,
+      "subConditions": null
+    },
+    "adj-na": {
+      "name": "Na adjective",
+      "isDictionaryForm": true,
+      "subConditions": null
+    },
+    "n": {
+      "name": "Noun",
+      "isDictionaryForm": true,
+      "subConditions": null
+    },
+    "copula": {
+      "name": "Copula attached to a nominal predicate",
+      "isDictionaryForm": true,
+      "subConditions": null
+    },
     "v": {
       "name": "Verb",
       "isDictionaryForm": false,
@@ -127,6 +147,71 @@
     }
   },
   "transforms": {
+    "-なら": {
+      "name": "-なら",
+      "rules": [
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": ["copula"],
+          "inflected": "なら",
+          "deinflected": "だ"
+        }
+      ]
+    },
+    "suru": {
+      "name": "suru",
+      "rules": [
+        {
+          "type": "suffix",
+          "conditionsIn": [
+            "copula"
+          ],
+          "conditionsOut": [
+            "copula"
+          ],
+          "inflected": "です",
+          "deinflected": "だ"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "copula"
+          ],
+          "inflected": "だった",
+          "deinflected": "だ"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "copula"
+          ],
+          "inflected": "でした",
+          "deinflected": "です"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": ["vs"],
+          "conditionsOut": ["vs-noun"],
+          "inflected": "する",
+          "deinflected": ""
+        }
+      ]
+    },
+    "copula": {
+      "name": "copula",
+      "rules": [
+        {
+          "type": "suffix",
+          "conditionsIn": ["copula"],
+          "conditionsOut": ["adj-na", "n"],
+          "inflected": "だ",
+          "deinflected": ""
+        }
+      ]
+    },
     "-ば": {
       "name": "-ば",
       "description": "1. Conditional form; shows that the previous stated condition's establishment is the condition for the latter stated condition to occur.\n2. Shows a trigger for a latter stated perception or judgment.\nUsage: Attach ば to the hypothetical form (仮定形) of verbs and i-adjectives.",
@@ -1908,6 +1993,20 @@
         {
           "type": "suffix",
           "conditionsIn": [],
+          "conditionsOut": ["copula"],
+          "inflected": "だったら",
+          "deinflected": "だ"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": ["copula"],
+          "inflected": "でしたら",
+          "deinflected": "です"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
           "conditionsOut": [
             "adj-i"
           ],
@@ -2244,6 +2343,13 @@
       "name": "-たり",
       "description": "1. Shows two actions occurring back and forth (when used with two verbs).\n2. Shows examples of actions and states (when used with multiple verbs and adjectives).\nUsage: Attach たり to the continuative form (連用形) of verbs after euphonic change form, かったり to the stem of i-adjectives",
       "rules": [
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": ["-ます"],
+          "inflected": "ましたり",
+          "deinflected": "ます"
+        },
         {
           "type": "suffix",
           "conditionsIn": [],
@@ -5213,6 +5319,61 @@
       "name": "negative",
       "description": "1. Negative form of verbs.\n2. Expresses a feeling of solicitation to the other party.\nUsage: Attach ない to the irrealis form (未然形) of verbs, くない to the stem of i-adjectives. ない itself conjugates as i-adjective. ます becomes ません.",
       "rules": [
+        {
+          "type": "suffix",
+          "conditionsIn": [
+            "adj-i",
+            "copula"
+          ],
+          "conditionsOut": [
+            "copula"
+          ],
+          "inflected": "ではない",
+          "deinflected": "だ"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [
+            "adj-i",
+            "copula"
+          ],
+          "conditionsOut": [
+            "copula"
+          ],
+          "inflected": "じゃない",
+          "deinflected": "だ"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [
+            "copula",
+            "-ません"
+          ],
+          "conditionsOut": [
+            "copula"
+          ],
+          "inflected": "ではありません",
+          "deinflected": "です"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [
+            "copula",
+            "-ません"
+          ],
+          "conditionsOut": [
+            "copula"
+          ],
+          "inflected": "じゃありません",
+          "deinflected": "です"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": ["-なさい"],
+          "inflected": "なさるな",
+          "deinflected": "なさい"
+        },
         {
           "type": "suffix",
           "conditionsIn": [

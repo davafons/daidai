@@ -38,7 +38,10 @@ module Daidai
     # can't distinguish (irregular okurigana inside an otherwise-regular row).
     LEMMA_POS = {
       "行く" => "v5k-s", "逝く" => "v5k-s", "往く" => "v5k-s",
-      "有る" => "v5r-i", "在る" => "v5r-i", "ある" => "v5r-i"
+      "有る" => "v5r-i", "在る" => "v5r-i", "ある" => "v5r-i",
+      "問う" => "v5u-s",
+      "くださる" => "v5aru", "なさる" => "v5aru", "いらっしゃる" => "v5aru",
+      "いい" => "adj-ix"
     }.freeze
 
     class << self
@@ -85,11 +88,12 @@ module Daidai
           CONJUGATION_TYPE[pos[4]] || (pos[4].to_s.start_with?("上一段", "下一段") ? "v1" : nil)
         when "形容詞" then "adj-i"
         when "形状詞" then "adj-na"
+        when "助動詞" then "cop" if %w[助動詞-ダ 助動詞-デス].include?(pos[4])
         end
       end
 
       def inflecting?(pos)
-        %w[動詞 形容詞 形状詞].include?(pos[0])
+        !from_conjugation_type(pos).nil?
       end
 
       def suru?(pos) = pos[4] == "サ行変格"

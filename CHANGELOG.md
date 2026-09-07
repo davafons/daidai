@@ -6,6 +6,28 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-07
+
+### Added
+
+- Deinflection candidates expose `word_classes` and `matches_pos?` for JMdict
+  part-of-speech validation. An ichidan candidate such as かかる from かかなかった
+  can now be rejected when the dictionary entry is godan.
+- Suru-noun bases such as 勉強 from 勉強しました, nominal predicates such as
+  静か from 静かだった, and standalone copula forms.
+- Forward conjugation of だ with the JMdict `cop` tag.
+- Automatic copula resolution for だ, です, だった, and でした.
+
+### Fixed
+
+- Automatic POS resolution preserves the irregular classes of 問う, いい,
+  くださる, なさる, and いらっしゃる. Automatic past forms now include 問うた
+  and よかった rather than 問った and いかった.
+- Polite representative forms such as しましたり now deinflect to する.
+- Negative polite imperatives such as 死になさるな now deinflect to their base.
+- Irregular subclasses validate their final transformation against the forward
+  paradigm, so 行いた cannot match 行く tagged `v5k-s`.
+
 ## [0.2.5] - 2026-08-03
 
 ### Removed

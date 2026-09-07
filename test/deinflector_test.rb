@@ -29,6 +29,52 @@ class DeinflectorTest < Minitest::Test
     assert_equal %w[-ば negative], chain("飲まなければ", "飲む")
   end
 
+  def test_suru_noun_is_a_dictionary_base_without_the_appended_verb
+    %w[勉強する 勉強した 勉強しました 勉強しなかった].each do |surface|
+      candidates = Daidai.deinflect(surface).select { |candidate| candidate.term == "勉強" }
+      assert candidates.any? { |candidate| candidate.matches_pos?([ "vs" ]) }, surface
+      refute candidates.any? { |candidate| candidate.matches_pos?([ "n" ]) }, surface
+      refute candidates.any? { |candidate| candidate.matches_pos?([ "v5r" ]) }, surface
+    end
+  end
+
+  def test_nominal_predicates_require_a_noun_or_na_adjective
+    %w[静かだった 静かではない 静かじゃなかった 静かでした 静かではありませんでした 静かだったら 静かなら].each do |surface|
+      candidates = Daidai.deinflect(surface).select { |candidate| candidate.term == "静か" }
+      assert candidates.any? { |candidate| candidate.matches_pos?([ "adj-na" ]) }, surface
+      assert candidates.any? { |candidate| candidate.matches_pos?([ "n" ]) }, surface
+      refute candidates.any? { |candidate| candidate.matches_pos?([ "v1" ]) }, surface
+    end
+  end
+
+  def test_standalone_copula_inflections_retain_the_copula_class
+    %w[だった でした だったら なら].each do |surface|
+      candidates = Daidai.deinflect(surface).select { |candidate| candidate.term == "だ" }
+      assert candidates.any? { |candidate| candidate.matches_pos?([ "cop" ]) }, surface
+      refute candidates.any? { |candidate| candidate.matches_pos?([ "v5r" ]) }, surface
+    end
+  end
+
+  def test_polite_representative_forms_recover_the_verb_class
+    { "しましたり" => %w[する vs-i], "読みましたり" => %w[読む v5m],
+      "食べましたり" => %w[食べる v1], "来ましたり" => %w[来る vk] }.each do |surface, (base, pos)|
+      candidates = Daidai.deinflect(surface)
+      assert candidates.any? { |candidate|
+        candidate.term == base && candidate.matches_pos?([ pos ]) && candidate.inflections == %w[-たり -ます]
+      }, surface
+    end
+  end
+
+  def test_negative_polite_imperative
+    { "死になさるな" => %w[死ぬ v5n], "読みなさるな" => %w[読む v5m],
+      "食べなさるな" => %w[食べる v1], "しなさるな" => %w[する vs-i] }.each do |surface, (base, pos)|
+      candidates = Daidai.deinflect(surface)
+      assert candidates.any? { |candidate|
+        candidate.term == base && candidate.matches_pos?([ pos ]) && candidate.inflections == %w[negative -なさい]
+      }, surface
+    end
+  end
+
   def test_adjective_negative
     assert_equal %w[negative], chain("高くない", "高い")
   end
@@ -62,6 +108,53 @@ class DeinflectorTest < Minitest::Test
     found = Daidai.deinflect("食べてる").find { |d| d.term == "食べる" }
 
     assert found.dictionary_form?, "食べる should be flagged as a dictionary form"
+  end
+
+  def test_dictionary_classes_reject_a_godan_homograph_of_an_ichidan_candidate
+    candidates = Daidai.deinflect("かかなかった")
+    spurious = candidates.find { |candidate| candidate.term == "かかる" }
+    valid = candidates.find { |candidate| candidate.term == "かく" }
+
+    assert_equal [ "v1" ], spurious.word_classes
+    refute spurious.matches_pos?(%w[v5r vi])
+    assert valid.matches_pos?(%w[v5k vt])
+    refute valid.matches_pos?(%w[n])
+  end
+
+  def test_dictionary_classes_match_jmdict_subclasses
+    {
+      %w[行った 行く] => "v5k-s",
+      %w[食べました 食べる] => "v1",
+      %w[した する] => "vs-i",
+      %w[来た 来る] => "vk",
+      %w[よかった よい] => "adj-ix"
+    }.each do |(surface, term), pos|
+      candidates = Daidai.deinflect(surface).select { |candidate| candidate.term == term }
+      assert candidates.any? { |candidate| candidate.matches_pos?([ pos ]) }, "#{surface} -> #{term} (#{pos})"
+      refute(candidates.any? { |candidate| candidate.matches_pos?([ "n" ]) })
+    end
+  end
+
+  def test_irregular_classes_reject_regularized_forms
+    [
+      %w[行いた 行く v5k-s],
+      %w[問った 問う v5u-s],
+      %w[あらない ある v5r-i],
+      %w[くださります くださる v5aru]
+    ].each do |surface, base, pos|
+      candidates = Daidai.deinflect(surface).select { |candidate| candidate.term == base }
+      refute_empty candidates, surface
+      refute candidates.any? { |candidate| candidate.matches_pos?([ pos ]) }, surface
+    end
+    [
+      %w[行った 行く v5k-s],
+      %w[問うた 問う v5u-s],
+      %w[くださいます くださる v5aru]
+    ].each do |surface, base, pos|
+      assert Daidai.deinflect(surface).any? { |candidate|
+        candidate.term == base && candidate.matches_pos?([ pos ])
+      }, surface
+    end
   end
 
   def test_excludes_identity_and_dedupes

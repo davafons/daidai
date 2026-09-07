@@ -115,6 +115,15 @@ class ConjugatorTest < Minitest::Test
     assert_equal "静かだった", text("静か", "adj-na", :past)
   end
 
+  def test_standalone_copula
+    assert_equal "だ", text("だ", "cop", :non_past)
+    assert_equal "です", text("だ", "cop", :non_past, polite: true)
+    assert_equal "だった", text("だ", "cop", :past)
+    assert_equal "でした", text("だ", "cop", :past, polite: true)
+    assert_equal "ではない", text("だ", "cop", :non_past, negative: true)
+    assert_equal "で", text("だ", "cop", :te)
+  end
+
   def test_vs_noun_appends_suru
     assert_equal "勉強する", text("勉強", "vs", :non_past)
     assert_equal "勉強しない", text("勉強", "vs", :non_past, negative: true)
@@ -127,5 +136,36 @@ class ConjugatorTest < Minitest::Test
     assert_equal "書こう",    text("書く", "v5k", :volitional)
     assert_equal "書くな",    text("書く", "v5k", :imperative, negative: true) # prohibitive
     assert_equal "書かれます", text("書く", "v5k", :passive, polite: true)
+  end
+
+  def test_irregular_subclasses_against_independent_forms
+    [
+      %w[くださる v5aru くださった くださらない くださいます くださって],
+      %w[なさる v5aru なさった なさらない なさいます なさって],
+      %w[いらっしゃる v5aru いらっしゃった いらっしゃらない いらっしゃいます いらっしゃって],
+      %w[問う v5u-s 問うた 問わない 問います 問うて],
+      %w[いい adj-ix よかった よくない いいです よくて],
+      %w[勉強 vs 勉強した 勉強しない 勉強します 勉強して],
+      %w[静か adj-na 静かだった 静かではない 静かです 静かで]
+    ].each do |word, pos, past, negative, polite, te|
+      assert_equal past, text(word, pos, :past), word
+      assert_equal negative, text(word, pos, :non_past, negative: true), word
+      assert_equal polite, text(word, pos, :non_past, polite: true), word
+      assert_equal te, text(word, pos, :te), word
+    end
+  end
+
+  def test_kuru_readings_change_with_each_form
+    word = Daidai.conjugate("来る", "vk", reading: "くる")
+    {
+      past: %w[来た きた], potential: %w[来られる こられる],
+      passive: %w[来られる こられる], causative: %w[来させる こさせる],
+      causative_passive: %w[来させられる こさせられる],
+      volitional: %w[来よう こよう], provisional: %w[来れば くれば], conditional: %w[来たら きたら]
+    }.each do |name, (kanji, reading)|
+      form = word.public_send(name)
+      assert_equal kanji, form.kanji
+      assert_equal reading, form.reading
+    end
   end
 end

@@ -81,7 +81,9 @@ module Daidai
       def inflect(strat, text, row)
         return nil if text.nil? || text.empty?
 
-        if strat[:suffix]
+        if strat[:copula]
+          row.okuri.to_s
+        elsif strat[:suffix]
           # Copula forms are whole suffixes appended to the citation form
           # (静か → 静かだ / 静かではない); no stem stripping or euphony.
           text + row.okuri.to_s
@@ -113,6 +115,8 @@ module Daidai
           { pos_id: Tables.pos_ids.fetch(code), kind: kind }
         elsif code == "adj-na"
           { pos_id: COPULA_POS, kind: :na_adjective, suffix: true }
+        elsif code == "cop"
+          { pos_id: COPULA_POS, kind: :copula, copula: true }
         elsif code == "vs"
           { pos_id: SURU_POS, kind: :suru, append: "する" }
         end

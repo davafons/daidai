@@ -6,13 +6,38 @@ module Daidai
   # A single deinflection candidate: a base-form `term` reached from the input by
   # applying `inflections` (transform names, ordered from the surface form inward
   # to the dictionary form). `dictionary_form?` is true when the rule chain lands
-  # on a recognised dictionary form (a likely real lemma), useful for callers
-  # without their own dictionary to look the term up in.
+  # on a dictionary-form grammatical class. This does not establish that the
+  # term exists; callers must check the spelling and part of speech in a dictionary.
   #
   #   Daidai.deinflect("食べてる")   # candidate base forms, each with named inflections;
   #                                  # one is #<Daidai::Deinflection 食べる [-いる, -て]>
-  Deinflection = Struct.new(:term, :inflections, :dictionary_form, keyword_init: true) do
+  Deinflection = Struct.new(:term, :inflections, :dictionary_form, :word_classes, :base_surface, keyword_init: true) do
     def dictionary_form? = dictionary_form
+
+    def matches_pos?(pos_codes)
+      Array(pos_codes).any? do |code|
+        next true if code.to_s == "vs" && Array(word_classes).include?("vs-noun")
+
+        word_class = case code.to_s
+                     when /\Av1(?:-|\z)/ then "v1"
+                     when /\Av5/ then "v5"
+                     when /\Avs(?:-|\z)/ then "vs"
+                     when "adj-ix" then "adj-i"
+                     when "cop" then "copula"
+                     else code.to_s
+                     end
+        Array(word_classes).include?(word_class) && compatible_irregular_form?(code.to_s)
+      end
+    end
+
+    def compatible_irregular_form?(code)
+      return true unless base_surface && Deinflector::IRREGULAR_POS.include?(code) &&
+                         Deinflector::GENERATED_RULES.include?(inflections.last)
+
+      word = Daidai.conjugate(term, code)
+      word&.any? { |form| form.text == base_surface }
+    end
+    private :compatible_irregular_form?
 
     # The inflections as friendly English labels for display (e.g. "-いる" =>
     # "progressive", "-て" => "te-form"), via Deinflector.label. Localise these
@@ -38,6 +63,8 @@ module Daidai
   # offline, string-rule deinflection.
   module Deinflector
     DATA_FILE = File.expand_path("resources/japanese-transforms.json", __dir__)
+    IRREGULAR_POS = %w[v5k-s v5u-s v5r-i v5aru v1-s adj-ix vs-s].freeze
+    GENERATED_RULES = %w[-た -て -ます negative -ば -たら -たり potential passive causative volitional imperative].freeze
 
     # Friendly English labels for the deinflection rule names #deinflect emits.
     # The underlying names (ported from Yomitan) are terse and sometimes symbolic
@@ -47,6 +74,7 @@ module Daidai
     # these rather than maintain their own map. Keyed by the rule name; see
     # Deinflector.label for the lookup (which falls back to the name itself).
     LABELS = {
+      "suru" => "suru verb", "copula" => "copula", "-なら" => "conditional (-nara)",
       "-いる" => "progressive", "-て" => "te-form", "-た" => "past",
       "-ます" => "polite", "negative" => "negative", "passive" => "passive",
       "potential" => "potential", "potential or passive" => "potential / passive",
@@ -108,9 +136,9 @@ module Daidai
       # `term`; callers without one can keep only `dictionary_form?` candidates.
       def deinflect(text)
         transform(text)
-          .reject { |t| t.trace.empty? }
+          .reject { |t| t.trace.empty? || t.text.empty? }
           .map { |t| to_deinflection(t) }
-          .uniq { |d| [ d.term, d.inflections ] }
+          .uniq { |d| [ d.term, d.inflections, d.word_classes, d.base_surface ] }
       end
 
       # Friendly English label for a deinflection rule name (the strings in a
@@ -159,7 +187,11 @@ module Daidai
           # trace is newest-first (innermost rule first); reverse so the names read
           # from the surface form inward to the dictionary form.
           inflections: transformed.trace.reverse.map { |frame| transforms_by_id[frame[:transform]].name },
-          dictionary_form: transformed.conditions.anybits?(dictionary_mask)
+          dictionary_form: transformed.conditions.anybits?(dictionary_mask),
+          base_surface: transformed.trace.first&.fetch(:text),
+          word_classes: data["conditions"].filter_map do |name, condition|
+            name if condition["isDictionaryForm"] && transformed.conditions.anybits?(condition_flags.fetch(name))
+          end.freeze
         )
       end
 

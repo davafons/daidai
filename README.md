@@ -190,7 +190,10 @@ d = Daidai.deinflect("食べてる").find { |x| x.term == "食べる" }
 d.term              # => "食べる"             (the candidate dictionary form)
 d.inflections       # => ["-いる", "-て"]      (rule names, surface to dictionary)
 d.labels            # => ["progressive", "te-form"]   (friendly English names)
-d.dictionary_form?  # => true                (chain lands on a known dictionary form)
+d.dictionary_form?  # => true                (chain reaches a dictionary-form class)
+d.word_classes      # => ["v1"]
+d.matches_pos?(["v1", "vt"])  # => true
+d.base_surface      # => "食べて"           (surface before the final rule)
 d.to_s              # => "食べる [-いる, -て]"
 ```
 
@@ -202,11 +205,20 @@ labels downstream if your app is multilingual.
 Deinflection is rule-based and **dictionary-free**, so it returns *every* base
 form the rules can reach, many of which are not real words (食べてる also yields
 食べつ as a hypothetical potential). It is meant to feed a dictionary lookup: keep
-the candidates whose `term` is a real entry. If you have no dictionary, filtering
-to `dictionary_form?` candidates keeps the plausible lemmas.
+the candidates whose `term` is a real entry and whose `matches_pos?` accepts that
+entry's JMdict part-of-speech codes. `dictionary_form?` checks the grammatical
+shape, not whether the word exists. For example, かかなかった produces かかる as
+an ichidan candidate; it must not match a godan かかる entry.
+
+Suru nouns and nominal predicates are dictionary candidates too: 勉強しました
+can reach 勉強 with class `vs-noun`, and 静かだった can reach 静か with classes
+`adj-na` and `n`. `matches_pos?` maps these to JMdict tags. For irregular
+subclasses it also checks supported final transformations against the forward
+paradigm. The check retains the intermediate `base_surface`, so a valid
+contraction around an irregular verb is not mistaken for a regularized form.
 
 This pairs naturally with a dictionary like JMdict: deinflect the query, look up
-each candidate `term`, and you have the lemma, its part of speech, and the named
+each candidate `term`, validate its part of speech, and you have the lemma and the named
 inflection, without a morphological analyzer. (For a single authoritative lemma
 + reading from arbitrary text, including full sentences, the kabosu path above is
 still the tool; the two are complementary.)

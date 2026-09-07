@@ -40,9 +40,42 @@ class KabosuTest < Minitest::Test
     assert_equal "adj-na", map(%w[形状詞 一般 * * * *], "静か")
   end
 
+  def test_irregular_subclasses_not_expressed_by_the_conjugation_type
+    {
+      "問う" => %w[五段-ワア行 v5u-s],
+      "くださる" => %w[五段-ラ行 v5aru],
+      "なさる" => %w[五段-ラ行 v5aru],
+      "いらっしゃる" => %w[五段-ラ行 v5aru]
+    }.each do |lemma, (type, expected)|
+      assert_equal expected, map([ "動詞", "一般", "*", "*", type, "終止形" ], lemma), lemma
+    end
+    assert_equal "adj-ix", map(%w[形容詞 一般 * * 形容詞 終止形], "いい")
+  end
+
   def test_non_inflecting_pos_is_nil
     assert_nil map(%w[名詞 普通名詞 * * * *], "猫")
     assert_nil map(%w[助詞 格助詞 * * * *], "が")
+    assert_nil map(%w[助動詞 * * * 助動詞-タ 終止形], "た")
+    assert_nil map(%w[助動詞 * * * 助動詞-マス 終止形], "ます")
+  end
+
+  def test_copula_auxiliaries_have_their_own_paradigm
+    assert_equal "cop", map(%w[助動詞 * * * 助動詞-ダ 終止形], "だ")
+    assert_equal "cop", map(%w[助動詞 * * * 助動詞-デス 終止形], "です")
+  end
+
+  def test_automatic_copulas_preserve_the_first_inflecting_word
+    skip "kabosu / Sudachi dictionary not available" unless Daidai::Kabosu.available?
+
+    { "だ" => "だ", "だった" => "だ", "です" => "です", "でした" => "です" }.each do |input, lemma|
+      word = Daidai.conjugate(input)
+      refute_nil word, input
+      assert_equal lemma, word.word, input
+      assert_equal "だった", word.past.to_s, input
+    end
+    assert_equal "静か", Daidai.conjugate("静かだった").word
+    assert_equal "食べる", Daidai.conjugate("食べた").word
+    assert_nil Daidai.conjugate("た")
   end
 
   def test_resolve_inflected_words
@@ -53,7 +86,9 @@ class KabosuTest < Minitest::Test
       "行った" => %w[行く 行った], # past → v5k-s irregular
       "高くない" => %w[高い 高かった], # negative adj → adj-i
       "した" => %w[する した], # → する (vs-i)
-      "勉強した" => %w[勉強 勉強した] }.each do |input, (lemma, past)|
+      "勉強した" => %w[勉強 勉強した],
+      "問う" => %w[問う 問うた],
+      "いい" => %w[いい よかった] }.each do |input, (lemma, past)|
       word = Daidai.conjugate(input)
       assert_equal lemma, word.word, "#{input} should resolve to #{lemma}"
       assert_equal past, word.past.to_s, "#{input} past form"
