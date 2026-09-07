@@ -36,19 +36,29 @@ module Daidai
 
     # Dictionary-form overrides for verbs whose JMdict subclass Sudachi's 活用型
     # can't distinguish (irregular okurigana inside an otherwise-regular row).
+    HONORIFIC_READINGS = {
+      "くださる" => "くださる", "下さる" => "くださる",
+      "なさる" => "なさる", "為さる" => "なさる",
+      "いらっしゃる" => "いらっしゃる",
+      "おっしゃる" => "おっしゃる", "仰る" => "おっしゃる", "仰有る" => "おっしゃる",
+      "ござる" => "ござる", "御座る" => "ござる"
+    }.freeze
+
     LEMMA_POS = {
       "行く" => "v5k-s", "逝く" => "v5k-s", "往く" => "v5k-s",
       "有る" => "v5r-i", "在る" => "v5r-i", "ある" => "v5r-i",
       "問う" => "v5u-s",
-      "くださる" => "v5aru", "なさる" => "v5aru", "いらっしゃる" => "v5aru",
       "いい" => "adj-ix"
-    }.freeze
+    }.merge(HONORIFIC_READINGS.transform_values { "v5aru" }).freeze
 
     class << self
       # Resolve `text` to { word:, pos:, reading: } from its first inflecting
       # morpheme, or nil when nothing conjugatable is found. Raises
       # MissingDependency when kabosu/a dictionary isn't installed.
       def resolve(text)
+        honorific = honorific_entry(text)
+        return honorific if honorific
+
         morphemes = tokenizer.tokenize(text).to_a
         index = morphemes.index { |m| inflecting?(m.part_of_speech) }
         return nil unless index
@@ -81,6 +91,16 @@ module Daidai
       def reset! = (@tokenizer = nil)
 
       private
+
+      def honorific_entry(text)
+        lemma = text if HONORIFIC_READINGS.key?(text)
+        if !lemma && HONORIFIC_READINGS.keys.any? { |word| text.start_with?(word.delete_suffix("る")) }
+          lemma = Daidai.deinflect(text).find do |candidate|
+            HONORIFIC_READINGS.key?(candidate.term) && candidate.matches_pos?([ "v5aru" ])
+          end&.term
+        end
+        { word: lemma, pos: "v5aru", reading: HONORIFIC_READINGS.fetch(lemma) } if lemma
+      end
 
       def from_conjugation_type(pos)
         case pos[0]

@@ -17,8 +17,44 @@ class DeinflectorTest < Minitest::Test
     assert_equal %w[-いる -て], chain("食べてる", "食べる")
   end
 
+  def test_written_humble_benefactive_matches_kana_chain
+    { "言って差し上げた" => "言う", "読んで差し上げた" => "読む" }.each do |surface, lemma|
+      assert_equal [ "-た", "-てさしあげる", "-て" ], chain(surface, lemma), surface
+    end
+  end
+
+  def test_na_adjective_adverbial_candidates_keep_their_word_class
+    %w[静かに 確かに 上手に].each do |surface|
+      candidate = Daidai.deinflect(surface).find do |form|
+        form.term == surface.delete_suffix("に") && form.matches_pos?([ "adj-na" ])
+      end
+      refute_nil candidate, surface
+      assert_equal [ "adverbial" ], candidate.inflections
+      refute candidate.matches_pos?([ "n" ])
+      refute candidate.matches_pos?([ "cop" ])
+    end
+    refute(Daidai.deinflect("に").any? { |form| form.term.empty? })
+  end
+
+  def test_copula_chains_describe_past_and_politeness_not_suru_verbs
+    { "だった" => [ "だ", %w[-た] ], "でした" => [ "です", %w[-た] ] }.each do |surface, (base, expected)|
+      candidate = Daidai.deinflect(surface).find { |form| form.term == base && form.matches_pos?([ "cop" ]) }
+      assert_equal expected, candidate&.inflections, surface
+    end
+    candidate = Daidai.deinflect("でした").find { |form| form.term == "だ" && form.matches_pos?([ "cop" ]) }
+    assert_equal %w[-た -ます], candidate&.inflections
+    refute_includes candidate.inflections.map { |name| Daidai::Deinflector.label(name) }, "suru verb"
+  end
+
   def test_progressive_full
     assert_equal %w[-いる -て], chain("食べている", "食べる")
+  end
+
+  def test_copula_te_form_does_not_conjugate_the_past_auxiliary
+    forms = Daidai.deinflect("で").select { |candidate| candidate.term == "だ" }
+    assert(forms.any? { |candidate| candidate.matches_pos?([ "cop" ]) && candidate.inflections == %w[-て] })
+    refute(forms.any? { |candidate| candidate.matches_pos?([ "aux-v" ]) })
+    refute(forms.any? { |candidate| candidate.matches_pos?([ "v5r" ]) })
   end
 
   def test_negative_past
@@ -155,6 +191,16 @@ class DeinflectorTest < Minitest::Test
         candidate.term == base && candidate.matches_pos?([ pos ])
       }, surface
     end
+  end
+
+  def test_honorific_imperatives_reach_their_irregular_base
+    %w[くださる 下さる なさる 為さる いらっしゃる おっしゃる 仰る 仰有る ござる 御座る].each do |base|
+      surface = "#{base.delete_suffix("る")}い"
+      candidate = Daidai.deinflect(surface).find { |form| form.term == base && form.inflections == [ "imperative" ] }
+      refute_nil candidate, surface
+      assert candidate.matches_pos?([ "v5aru" ]), surface
+    end
+    refute(Daidai.deinflect("あい").any? { |form| form.term == "ある" && form.inflections == [ "imperative" ] })
   end
 
   def test_excludes_identity_and_dedupes

@@ -16,7 +16,8 @@ module Daidai
     imperative: "Imperative",
     conditional: "Conditional (~tara)",
     alternative: "Alternative (~tari)",
-    stem: "Continuative (~i)"
+    stem: "Continuative (~i)",
+    adverbial: "Adverbial"
   }.freeze
 
   # conjo.csv conjugation id (1..13) => form name, in the same order as FORMS.

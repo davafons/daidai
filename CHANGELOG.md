@@ -6,6 +6,30 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-09
+
+### Added
+
+- Na-adjective adverbial forms, including 静かに, with an `adverbial` conjugation and deinflection label.
+
+### Fixed
+
+- Copula past and polite forms report their grammatical chains instead of the suru-verb label. The te-form で resolves to the copula だ without conjugating the past auxiliary.
+
+- Written humble forms such as 言って差し上げた and 読んで差し上げた deinflect to their main verb, just like their kana spellings.
+
+- Honorific imperatives such as ください and 下さい deinflect to their irregular verb bases, including the kana and kanji spellings of the honorific family.
+
+- Na-adjective conjugation includes the adverbial form, such as 静かに, with its reading.
+
+- Copula で deinflects to だ as a te-form without treating the past auxiliary as a copula.
+- Copula deinflection chains label past and politeness correctly instead of
+  calling だった and でした suru verbs.
+
+- Automatic honorific resolution preserves kana and kanji spellings, including
+  下さる and おっしゃる, and recovers inflected spellings such as 仰有います
+  before accepting a tokenizer split.
+
 ## [0.3.0] - 2026-09-07
 
 ### Added

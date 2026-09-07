@@ -147,6 +147,18 @@
     }
   },
   "transforms": {
+    "adverbial": {
+      "name": "adverbial",
+      "rules": [
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": ["adj-na"],
+          "inflected": "に",
+          "deinflected": ""
+        }
+      ]
+    },
     "-なら": {
       "name": "-なら",
       "rules": [
@@ -162,35 +174,6 @@
     "suru": {
       "name": "suru",
       "rules": [
-        {
-          "type": "suffix",
-          "conditionsIn": [
-            "copula"
-          ],
-          "conditionsOut": [
-            "copula"
-          ],
-          "inflected": "です",
-          "deinflected": "だ"
-        },
-        {
-          "type": "suffix",
-          "conditionsIn": [],
-          "conditionsOut": [
-            "copula"
-          ],
-          "inflected": "だった",
-          "deinflected": "だ"
-        },
-        {
-          "type": "suffix",
-          "conditionsIn": [],
-          "conditionsOut": [
-            "copula"
-          ],
-          "inflected": "でした",
-          "deinflected": "です"
-        },
         {
           "type": "suffix",
           "conditionsIn": ["vs"],
@@ -2682,6 +2665,13 @@
       "rules": [
         {
           "type": "suffix",
+          "conditionsIn": ["-て"],
+          "conditionsOut": ["copula"],
+          "inflected": "で",
+          "deinflected": "だ"
+        },
+        {
+          "type": "suffix",
           "conditionsIn": [
             "-て"
           ],
@@ -4816,6 +4806,96 @@
           "type": "suffix",
           "conditionsIn": [],
           "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "ください",
+          "deinflected": "くださる"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "下さい",
+          "deinflected": "下さる"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "なさい",
+          "deinflected": "なさる"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "為さい",
+          "deinflected": "為さる"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "いらっしゃい",
+          "deinflected": "いらっしゃる"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "おっしゃい",
+          "deinflected": "おっしゃる"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "仰い",
+          "deinflected": "仰る"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "仰有い",
+          "deinflected": "仰有る"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "ござい",
+          "deinflected": "ござる"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
+            "v5"
+          ],
+          "inflected": "御座い",
+          "deinflected": "御座る"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": [
             "v1"
           ],
           "inflected": "ろ",
@@ -5795,6 +5875,20 @@
       "rules": [
         {
           "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": ["copula"],
+          "inflected": "だった",
+          "deinflected": "だ"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [],
+          "conditionsOut": ["copula"],
+          "inflected": "でした",
+          "deinflected": "です"
+        },
+        {
+          "type": "suffix",
           "conditionsIn": [
             "-た"
           ],
@@ -6229,6 +6323,13 @@
       "name": "-ます",
       "description": "Polite conjugation of verbs and adjectives.\nUsage: Attach ます to the continuative form (連用形) of verbs.",
       "rules": [
+        {
+          "type": "suffix",
+          "conditionsIn": ["copula"],
+          "conditionsOut": ["copula"],
+          "inflected": "です",
+          "deinflected": "だ"
+        },
         {
           "type": "suffix",
           "conditionsIn": [
@@ -11571,6 +11672,28 @@
             "-て"
           ],
           "inflected": "でさしあげる",
+          "deinflected": "で"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [
+            "v1"
+          ],
+          "conditionsOut": [
+            "-て"
+          ],
+          "inflected": "て差し上げる",
+          "deinflected": "て"
+        },
+        {
+          "type": "suffix",
+          "conditionsIn": [
+            "v1"
+          ],
+          "conditionsOut": [
+            "-て"
+          ],
+          "inflected": "で差し上げる",
           "deinflected": "で"
         }
       ]

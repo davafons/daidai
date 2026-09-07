@@ -80,7 +80,7 @@ module Daidai
       "potential" => "potential", "potential or passive" => "potential / passive",
       "causative" => "causative", "short causative" => "short causative",
       "volitional" => "volitional", "volitional slang" => "volitional (slang)",
-      "imperative" => "imperative", "continuative" => "continuative",
+      "imperative" => "imperative", "continuative" => "continuative", "adverbial" => "adverbial (-ni)",
       "-たい" => "desiderative (-tai)", "-たら" => "conditional (-tara)",
       "-たり" => "representative (-tari)", "-ば" => "provisional (-ba)",
       "-ゃ" => "conditional contraction (-ya)", "-ちゃ" => "contracted (-cha)",

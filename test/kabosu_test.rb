@@ -59,6 +59,31 @@ class KabosuTest < Minitest::Test
     assert_nil map(%w[助動詞 * * * 助動詞-マス 終止形], "ます")
   end
 
+  def test_honorific_spellings_keep_their_lemma_and_irregular_polite_form
+    skip "kabosu / Sudachi dictionary not available" unless Daidai::Kabosu.available?
+
+    {
+      "くださる" => "くださいます", "下さる" => "下さいます",
+      "なさる" => "なさいます", "為さる" => "為さいます",
+      "いらっしゃる" => "いらっしゃいます",
+      "おっしゃる" => "おっしゃいます", "仰る" => "仰います", "仰有る" => "仰有います",
+      "ござる" => "ございます", "御座る" => "御座います"
+    }.each do |lemma, polite|
+      word = Daidai.conjugate(lemma)
+      assert_equal lemma, word.word, lemma
+      assert_equal "v5aru", word.pos, lemma
+      assert_includes word.map(&:text), polite, lemma
+      resolved = Daidai.conjugate(polite)
+      assert_equal lemma, resolved.word, polite
+      assert_equal "v5aru", resolved.pos, polite
+    end
+    assert_equal "おる", Daidai.conjugate("おる").word
+    assert_equal "v5r", Daidai.conjugate("おる").pos
+    %w[おっしゃった おっしゃらない おっしゃって おっしゃれば おっしゃい].each do |surface|
+      assert_equal "おっしゃる", Daidai.conjugate(surface).word, surface
+    end
+  end
+
   def test_copula_auxiliaries_have_their_own_paradigm
     assert_equal "cop", map(%w[助動詞 * * * 助動詞-ダ 終止形], "だ")
     assert_equal "cop", map(%w[助動詞 * * * 助動詞-デス 終止形], "です")

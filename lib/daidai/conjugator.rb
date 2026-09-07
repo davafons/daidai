@@ -47,6 +47,10 @@ module Daidai
         return nil if kanji.nil? && reading.empty?
 
         forms = build(strat, kanji, reading)
+        if strat[:kind] == :na_adjective
+          forms << Form.new(name: :adverbial, negative: false, polite: false, onum: 1,
+                            kanji: kanji && "#{kanji}に", reading: reading.empty? ? nil : "#{reading}に")
+        end
         forms.empty? ? nil : Word.new(word: kanji || reading, pos: code, kind: strat[:kind], forms: forms)
       end
 

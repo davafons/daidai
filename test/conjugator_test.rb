@@ -115,6 +115,17 @@ class ConjugatorTest < Minitest::Test
     assert_equal "静かだった", text("静か", "adj-na", :past)
   end
 
+  def test_na_adjective_adverbial_form
+    word = Daidai.conjugate("静か", "adj-na", reading: "しずか")
+    form = word[:adverbial]
+    refute_nil form
+    assert_equal "静かに", form.text
+    assert_equal "しずかに", form.reading
+    assert_nil word[:adverbial, negative: true]
+    assert_nil word[:adverbial, polite: true]
+    assert_nil Daidai.conjugate("だ", "cop")[:adverbial]
+  end
+
   def test_standalone_copula
     assert_equal "だ", text("だ", "cop", :non_past)
     assert_equal "です", text("だ", "cop", :non_past, polite: true)
