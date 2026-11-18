@@ -18,17 +18,25 @@ module Daidai
       Array(pos_codes).any? do |code|
         next true if code.to_s == "vs" && Array(word_classes).include?("vs-noun")
 
-        word_class = case code.to_s
-                     when /\Av1(?:-|\z)/ then "v1"
-                     when /\Av5/ then "v5"
-                     when /\Avs(?:-|\z)/ then "vs"
-                     when "adj-ix" then "adj-i"
-                     when "cop" then "copula"
-                     else code.to_s
-                     end
-        Array(word_classes).include?(word_class) && compatible_irregular_form?(code.to_s)
+        Array(word_classes).intersect?(classes_for(code.to_s)) && compatible_irregular_form?(code.to_s)
       end
     end
+
+    # The deinflection classes a JMdict code accepts. A vs-s verb also takes the
+    # godan negative (愛さない), but only after its kanji: in kana, ださない is
+    # 出す and かさない is 貸す.
+    def classes_for(code)
+      case code
+      when /\Av1(?:-|\z)/ then %w[v1]
+      when /\Av5/ then %w[v5]
+      when "vs-s" then term.match?(/\p{Han}する\z/) ? %w[vs vs-s] : %w[vs]
+      when /\Avs(?:-|\z)/ then %w[vs]
+      when "adj-ix" then %w[adj-i]
+      when "cop" then %w[copula]
+      else [ code ]
+      end
+    end
+    private :classes_for
 
     def compatible_irregular_form?(code)
       return true unless base_surface && Deinflector::IRREGULAR_POS.include?(code) &&
@@ -64,7 +72,8 @@ module Daidai
   module Deinflector
     DATA_FILE = File.expand_path("resources/japanese-transforms.json", __dir__)
     IRREGULAR_POS = %w[v5k-s v5u-s v5r-i v5aru v1-s adj-ix vs-s].freeze
-    GENERATED_RULES = %w[-た -て -ます negative -ば -たら -たり potential passive causative volitional imperative].freeze
+    GENERATED_RULES = [ "-た", "-て", "-ます", "negative", "-ば", "-たら", "-たり", "potential", "passive",
+                        "causative", "short causative", "volitional", "imperative" ].freeze
 
     # Friendly English labels for the deinflection rule names #deinflect emits.
     # The underlying names (ported from Yomitan) are terse and sometimes symbolic

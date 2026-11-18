@@ -67,6 +67,35 @@ class ConjugatorTest < Minitest::Test
     assert_equal "なかった", text("ある", "v5r-i", :past, negative: true)
   end
 
+  def test_aru_has_no_potential_or_short_causative
+    word = Daidai.conjugate("ある", "v5r-i")
+    assert_nil word.potential
+    assert_equal %w[あらせる], word.variants(:causative).map(&:text)
+    assert_equal %w[あらせられる], word.variants(:causative_passive).map(&:text)
+    assert_equal "あられる", word.passive.text
+  end
+
+  # 田野村忠温 (2001, 2009): the stem keeps the サ変 negative when its reading
+  # has a 促音, 撥音 or long vowel (察しない), and turns godan otherwise
+  # (愛さない).
+  def test_special_suru_negative_follows_the_reading_of_its_stem
+    { %w[愛する あいする] => "愛さない", %w[略する りゃくする] => "略さない",
+      %w[察する さっする] => "察しない", %w[反する はんする] => "反しない",
+      %w[有する ゆうする] => "有しない", %w[要する ようする] => "要しない" }.each do |(word, reading), negative|
+      assert_equal negative, text(word, "vs-s", :non_past, reading: reading, negative: true), word
+    end
+    assert_equal "察しなかった", text("察する", "vs-s", :past, reading: "さっする", negative: true)
+    assert_equal "さっしなかった", Daidai.conjugate("察する", "vs-s", reading: "さっする").past(negative: true).reading
+  end
+
+  def test_special_suru_verbs_list_both_negatives
+    word = Daidai.conjugate("愛する", "vs-s")
+    assert_equal %w[愛さない 愛しない], word.variants(:non_past, negative: true).map(&:text)
+    assert_equal %w[愛さなくて 愛さないで 愛しなくて 愛しないで], word.variants(:te, negative: true).map(&:text)
+    assert_equal %w[愛さなかったら 愛しなかったら], word.variants(:conditional, negative: true).map(&:text)
+    assert_equal %w[愛します], word.variants(:non_past, polite: true).map(&:text)
+  end
+
   def test_ichidan_taberu
     assert_equal "食べない", text("食べる", "v1", :non_past, negative: true)
     assert_equal "食べて", text("食べる", "v1", :te)

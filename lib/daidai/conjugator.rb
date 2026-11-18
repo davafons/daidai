@@ -28,6 +28,13 @@ module Daidai
     COPULA_POS = 15  # the copula だ — na-adjectives conjugate through it
     SURU_POS   = 48  # vs-i (する) — `vs` nouns conjugate by appending する
 
+    # A vs-s stem whose reading has a 促音, 撥音 or long vowel keeps the サ変
+    # negative (察しない, 反しない, 有しない); any other takes the godan one
+    # (愛さない, 略さない, 課さない). 田野村忠温 measured this in newspaper and web
+    # corpora (NINJAL 国立国語研究所論集, 2001 and 2009). 対する breaks it: たい has
+    # none of the three, yet nine in ten of its negatives are 対しない.
+    SAHEN_STEM = /[っんー]|[うくすつぬふむゆるぐずづぶぷゅおこそとのほもよろごぞどぼぽょ]う|[えけせてねへめれげぜでべぺ]い/
+
     class << self
       # True if any of `pos` (a JMdict code or array of codes) can be conjugated.
       def conjugatable?(pos)
@@ -46,7 +53,8 @@ module Daidai
         reading = reading.to_s
         return nil if kanji.nil? && reading.empty?
 
-        forms = build(strat, kanji, reading)
+        sahen_first = code == "vs-s" && reading.delete_suffix("する").match?(SAHEN_STEM)
+        forms = build(strat, kanji, reading, sahen_first: sahen_first)
         if strat[:kind] == :na_adjective
           forms << Form.new(name: :adverbial, negative: false, polite: false, onum: 1,
                             kanji: kanji && "#{kanji}に", reading: reading.empty? ? nil : "#{reading}に")
@@ -57,8 +65,9 @@ module Daidai
       private
 
       # Walk every (conjugation, quadrant, onum) row defined for this pos and
-      # construct the inflected kanji + reading.
-      def build(strat, kanji, reading)
+      # construct the inflected kanji + reading. `sahen_first` puts a vs-s
+      # verb's サ変 negatives (察しない) ahead of its godan ones (察さない).
+      def build(strat, kanji, reading, sahen_first: false)
         if strat[:append]
           kanji = (kanji || reading) + strat[:append]
           reading += strat[:append]
@@ -66,10 +75,9 @@ module Daidai
 
         Tables.conj.keys.sort.flat_map do |conj_id|
           QUADRANTS.flat_map do |negative, polite|
-            (1..9).filter_map do |onum|
-              row = Tables.conjo[[ strat[:pos_id], conj_id, negative, polite, onum ]]
-              next unless row
-
+            rows = (1..9).filter_map { |onum| Tables.conjo[[ strat[:pos_id], conj_id, negative, polite, onum ]] }
+            rows = rows.partition { |row| row.euphr == "し" }.sum([]) if sahen_first && negative && !polite
+            rows.each.with_index(1).filter_map do |row, onum|
               kf = inflect(strat, kanji, row)
               rf = inflect(strat, reading, row)
               next if kf.nil? && rf.nil?

@@ -13,6 +13,12 @@ class DeinflectorTest < Minitest::Test
     Daidai.deinflect(surface).find { |d| d.term == lemma }&.inflections
   end
 
+  # Whether `surface` is accepted as a form of `base`, the dictionary word of
+  # part of speech `pos`.
+  def accepted?(surface, base, pos)
+    Daidai.deinflect(surface).any? { |candidate| candidate.term == base && candidate.matches_pos?([ pos ]) }
+  end
+
   def test_progressive_contraction
     assert_equal %w[-いる -て], chain("食べてる", "食べる")
   end
@@ -191,6 +197,49 @@ class DeinflectorTest < Minitest::Test
         candidate.term == base && candidate.matches_pos?([ pos ])
       }, surface
     end
+  end
+
+  # ある has no potential: あれる is 荒れる. The short causative the tables
+  # also gave it, あらす, is 荒らす.
+  def test_aru_rejects_the_forms_of_areru_and_arasu
+    %w[あれる あれます あれない あれません 有れる あらす あらさない あらします あらされる].each do |surface|
+      base = surface.start_with?("有") ? "有る" : "ある"
+      refute accepted?(surface, base, "v5r-i"), surface
+    end
+    refute accepted?("気があれる", "気がある", "v5r-i")
+    %w[あった ありません あって あれば あれ あろう あられる あらせる あらず].each do |surface|
+      assert accepted?(surface, "ある", "v5r-i"), surface
+    end
+  end
+
+  def test_honorific_aru_verbs_keep_their_potential
+    assert accepted?("いらっしゃれる", "いらっしゃる", "v5aru")
+  end
+
+  # The negative of 一字漢語 + する depends on the verb: 愛さない but 察しない,
+  # and 属する takes both. Both shapes are real forms of the class.
+  def test_special_suru_verbs_accept_both_negatives
+    %w[愛さない 愛さなかった 愛さなくて 愛さないで 愛さなければ 愛さなかったら 愛さなかったり 愛さず 愛しない].each do |surface|
+      assert accepted?(surface, "愛する", "vs-s"), surface
+    end
+    { "察しない" => "察する", "達しなかった" => "達する", "属さない" => "属する", "属しない" => "属する" }.each do |surface, base|
+      assert accepted?(surface, base, "vs-s"), surface
+    end
+    %w[愛します 愛した 愛して 愛される 愛させる 愛すれば 愛せず].each do |surface|
+      assert accepted?(surface, "愛する", "vs-s"), surface
+    end
+    negative_past = Daidai.deinflect("愛さなかった").find { |form| form.term == "愛する" && form.matches_pos?([ "vs-s" ]) }
+    assert_equal %w[-た negative], negative_past.inflections
+  end
+
+  # The godan negative is read only after the kanji. In kana, ださない is 出す
+  # and かさない is 貸す. する itself and the suru nouns never take it.
+  def test_the_godan_negative_stays_with_special_suru_verbs_written_in_kanji
+    refute accepted?("ださない", "だする", "vs-s")
+    refute accepted?("かさない", "かする", "vs-s")
+    refute accepted?("さない", "する", "vs-i")
+    refute accepted?("勉強さない", "勉強", "vs")
+    refute accepted?("着せる", "着する", "vs-s")
   end
 
   def test_honorific_imperatives_reach_their_irregular_base
