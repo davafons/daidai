@@ -6,6 +6,25 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-18
+
+### Fixed
+
+- ある no longer has a potential. The JMdictDB table gave it あれる, which is
+  荒れる, so あれている could deinflect to ある. Its short causative あらす and
+  あらされる go too: they are 荒らす and 荒らされる. Short causatives are now
+  checked against the conjugation table like every other generated form.
+- The negatives of 愛する and the other vs-s verbs deinflect to their verb.
+  The table gave only 愛さない, which no rule reached, and the rules reached
+  only 愛しない, which the table did not list, so every negative of the class
+  failed, 察しない and 達しない included. Both shapes are now accepted. The
+  godan one is read only after the kanji, because in kana ださない is 出す and
+  かさない is 貸す.
+- Conjugating a vs-s verb lists both negatives. Given a reading whose stem has
+  a 促音, 撥音 or long vowel, the サ変 negative comes first (察しない, 反しない,
+  有しない), as 田野村忠温's corpus counts show. Otherwise the godan one does
+  (愛さない, 略さない).
+
 ## [0.4.0] - 2026-09-09
 
 ### Added
